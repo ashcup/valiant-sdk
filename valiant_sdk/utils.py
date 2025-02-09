@@ -20,11 +20,11 @@ def get_default_output(
 ) -> str:
     if format == "c":
         return "main.c"
-    else if format == "cpp":
+    if format == "cpp":
         return "main.cpp"
-    else if format == "js":
+    if format == "js":
         return "index.js"
-    else if format == "ts":
+    if format == "ts":
         return "index.ts"
 
 
