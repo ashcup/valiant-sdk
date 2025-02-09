@@ -1,0 +1,24 @@
+start: statement
+
+statement: print_statement
+
+print_statement: "print" expression
+
+expression: math_expression | identifier | literal
+
+math_expression: "(" expression ")"
+
+identifier: CNAME
+
+literal: number_literal | string_literal
+
+number_literal: SIGNED_NUMBER
+
+string_literal: ESCAPED_STRING
+
+%import common.CNAME
+%import common.ESCAPED_STRING
+%import common.SIGNED_NUMBER
+%import common.WS
+
+%ignore WS
