@@ -1,4 +1,4 @@
-start: statement
+start: statement+
 
 statement: print_statement
 
