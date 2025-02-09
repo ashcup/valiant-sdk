@@ -29,3 +29,15 @@ class ValiantParser:
         valiant_ast = parser.parse(valiant_source_code)
         # Return the parsed AST.
         return valiant_ast
+
+
+def valiant_parse(valiant_source_code: str):
+    '''
+    Parse Valiant source code into an AST representation of the source code.
+    '''
+    # Create a new parser.
+    parser = ValiantParser()
+    # Parse the source code into an AST.
+    ast = parser.parse(valiant_source_code)
+    # Return the AST.
+    return ast
