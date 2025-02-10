@@ -20,14 +20,16 @@ Valiant is designed to be easily read and written by beginners and is modelled c
 
 ## Usage
 
+`type_this_exactly`, `{replace_these_variables}`, `[this_is_optional]`
+
 ```sh
-python valiant.py {input_files} -o {output_file}
+python valiant.py {input_files} -o {output_file} -f {output_format}
 ```
 
 For example, to compile `hello_world.val` into `hello_world.exe`, you would type:
 
 ```sh
-python valiant.py hello_world.val -o hello_world.exe
+python valiant.py hello_world.val -o hello_world.cpp -f cpp
 ```
 
 ## [Examples](https://github.com/voidvoxel/valiant-sdk/tree/main/examples)
