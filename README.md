@@ -29,3 +29,7 @@ For example, to compile `hello_world.val` into `hello_world.exe`, you would type
 ```sh
 python valiant.py hello_world.val -o hello_world.exe
 ```
+
+## [Examples](https://github.com/voidvoxel/valiant-sdk/tree/main/examples)
+
+A collection of examples of Valiant source code can be found [here](https://github.com/voidvoxel/valiant-sdk/tree/main/examples).
