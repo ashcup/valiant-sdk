@@ -90,6 +90,41 @@ namespace valiant
         }
     }
 
+    Value::operator RawBoolean()
+    {
+        return (RawBoolean)(this->_data);
+    }
+
+    Value::operator RawByte()
+    {
+        return (RawByte)(this->_data);
+    }
+
+    Value::operator RawInteger()
+    {
+        return (RawInteger)(this->_data);
+    }
+
+    Value::operator RawNumber()
+    {
+        return (RawNumber)(this->_data);
+    }
+
+    Value::operator RawPointer()
+    {
+        return (RawPointer)(this->_data);
+    }
+
+    Value::operator RawString()
+    {
+        return *(RawString *)(this->_data);
+    }
+
+    Value::operator RawUnit()
+    {
+        return (RawUnit)(this->_data);
+    }
+
     RawValue Value::get_data()
     {
         return this->_data;

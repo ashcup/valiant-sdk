@@ -28,7 +28,7 @@ namespace valiant
     typedef double RawNumber;
     typedef void * RawPointer;
     typedef std::string RawString;
-    typedef int RawUnit;
+    typedef size_t RawUnit;
 
     RawInteger cpu_get_bit_count();
     Value print();
@@ -48,6 +48,13 @@ namespace valiant
         Value(RawUnit data);
         Value(const char *data);
         ~Value();
+        operator RawBoolean();
+        explicit operator RawByte();
+        explicit operator RawInteger();
+        operator RawNumber();
+        operator RawPointer();
+        operator RawString();
+        explicit operator RawUnit();
         static Value get_unit();
         static Value get_void();
         RawValue get_data();
