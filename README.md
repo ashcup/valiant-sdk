@@ -29,7 +29,7 @@ python valiant.py {input_files} -o {output_file} [-f {output_format}]
 For example, to compile `hello_world.val` into `hello_world.exe`, you would type:
 
 ```sh
-python valiant.py hello_world.val -o hello_world.cpp
+python valiant.py hello_world.val -o hello_world.cpp -fcpp
 ```
 
 ## [Examples](https://github.com/voidvoxel/valiant-sdk/tree/main/examples)
