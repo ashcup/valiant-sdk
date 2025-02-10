@@ -1,11 +1,22 @@
-from codegen import valiant_transpile
-from utils import load_text_file
+#!/usr/bin/env python3
 
-# Load the source code.
-valiant_source_code = load_text_file("examples/hello_world.valiant")
+import os.path as path
 
-# Generate C++ output source code from the Valiant input source code.
-cpp_source_code = valiant_transpile(valiant_source_code, "cpp")
+from valiant_sdk.compilation import valiant_compile
+from valiant_sdk.utils import load_text_file, parse_program_arguments, save_text_file
 
-# Print the generated source code.
-print(cpp_source_code)
+
+# Parse the arguments passed to the program.
+program_arguments = parse_program_arguments()
+
+input_paths = program_arguments.input
+output_format = program_arguments.format
+output_path = program_arguments.output
+is_debug_mode_enabled = program_arguments.debug
+is_verbose_mode_enabled = program_arguments.verbose
+
+if output_path is None:
+    output_path = input_paths[0] + "." + output_format
+
+# Compile the input files and write the generated source code into the output file.
+valiant_compile(input_paths, output_path, output_format)

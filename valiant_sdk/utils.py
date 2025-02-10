@@ -8,36 +8,76 @@ def abort(
     '''
     Abort the program by printing `message` and then returning `code`.
     '''
-    if (type(message) == str and len(message) > 0):
+    # If a message was provided:
+    if (type(message) is str and len(message) > 0):
+        # Print the error message.
         print(message)
+    # Otherwise:
     else:
+        # Print a generic error message.
         print("An unknown error occured. ")
+    # Exit the program, returning the provided exit code.
     exit(code)
 
 
-def get_default_output(
+def _get_default_output(
     format: str
 ) -> str:
+    # C
     if format == "c":
         return "main.c"
+    # C++
     if format == "cpp":
         return "main.cpp"
+    # Java
+    if format == "java":
+        return "main.java"
+    # JavaScript
     if format == "js":
         return "index.js"
+    # TypeScript
     if format == "ts":
         return "index.ts"
 
 
 def load_text_file(
-    path: str
+    file_path: str
 ) -> str:
     '''
     Load the contents of a text file.
     '''
     # Open the file and close the resource afterwards.
-    with open(path, 'r') as file:
+    with open(file_path, 'r') as file:
         # Read and return the contents of the file.
         return file.read().strip()
+
+
+def load_text_files(
+    input_paths: list[str]
+) -> list[str]:
+    '''
+    Load the contents of multiple text files.
+    '''
+    # Create an empty list to hold the contents of each file.
+    file_contents = []
+    # For each file path:
+    for file_path in input_paths:
+        # Load the contents of the text file.
+        file_content = load_text_file(file_path)
+        # Add the contents of the text file to the list.
+        file_contents.append(file_content)
+    # Return the list of contents of each file.
+    return file_contents
+
+
+def load_text_files_as_one(
+    input_paths: list[str]
+) -> str:
+    '''
+    Load the contents of multiple text files as one string.
+    '''
+    file_contents = load_text_files(input_paths)
+    return "\n".join(file_contents)
 
 
 def parse_program_arguments() -> object:
@@ -58,6 +98,11 @@ def parse_program_arguments() -> object:
         nargs = "+",
         type = str
     )
+    argument_parser.add_argument(
+        "--debug",
+        type = bool,
+        default = False
+    )
     # argument_parser.add_argument("-h", "--help")
     argument_parser.add_argument(
         "-f",
@@ -76,9 +121,10 @@ def parse_program_arguments() -> object:
     # argument_parser.add_argument("-v", "--version")
     # Parse the program arguments.
     program_arguments = argument_parser.parse_args()
+    output_format = program_arguments.format
     program_arguments.output.replace(
         "{DEFAULT_OUTPUT}",
-        DEFAULT_OUTPUT
+        _get_default_output(output_format)
     )
     # Return the program's arguments.
     return program_arguments
