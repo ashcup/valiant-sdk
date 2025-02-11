@@ -1,6 +1,9 @@
 on start
 {
     print "Hello, world!"
-    print "Your mom"
-    print "Bread"
+}
+
+on stop
+{
+    print "Goodbye, world!"
 }

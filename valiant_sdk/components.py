@@ -85,11 +85,11 @@ class FunctionBody(ASTNode):
     '''
 
     @property
-    def statements(self) -> str:
+    def statements(self) -> list[Expression]:
         return self._children
 
     @statements.setter
-    def statements(self, value: str):
+    def statements(self, value: list[Expression]):
         self._children = value
 
     def __init__(self, statements: list[Expression] = []):
@@ -112,6 +112,9 @@ class FunctionBody(ASTNode):
         self._i += 1
         # Return the statement.
         return statement
+
+    def append(self, statement: Expression):
+        self.statements.append(statement)
 
 
 # Top-level definitions

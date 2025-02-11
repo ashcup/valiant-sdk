@@ -1,4 +1,4 @@
-from valiant_sdk.components import ASTNode, PrintExpression
+from valiant_sdk.components import ASTNode, FunctionBody, PrintExpression
 from valiant_sdk.code_analysis import valiant_analyze
 from valiant_sdk.utils import load_text_file
 
@@ -36,6 +36,15 @@ class CPPCodeGenerator(ValiantCodeGenerator):
         self.output += "\n\n" + load_text_file(footer_path) + "\n"
         # Return the generated source code.
         return self.output.strip()
+
+    def _generate_main_function(self, main_function_body: FunctionBody) -> str:
+        source_code = "int main(int argc, char *argv[])\n{\n"
+        for statement in main_function_body:
+            node_source_code = self._generate_node(statement)
+            if type(node_source_code) is str and len(node_source_code) > 0:
+                source_code += "    " + node_source_code + ";\n"
+        source_code += "}\n"
+        return source_code
 
     def _generate_node(self, node: ASTNode) -> str:
         if isinstance(node, PrintExpression) is True:

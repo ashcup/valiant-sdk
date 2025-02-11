@@ -8,9 +8,11 @@ event_handler: event_name function_body
 
 // Event names
 
-event_name: event_name_start
+event_name: event_name_start | event_name_stop
 
 event_name_start: "on" "start"
+
+event_name_stop: "on" "stop"
 
 // Functions
 
