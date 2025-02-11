@@ -1,6 +1,6 @@
 from ast import Expression
-from lark import Tree
-from lark.lexer import Token
+from lark import Tree # type: ignore
+from lark.lexer import Token # type: ignore
 from valiant_sdk.parsing import valiant_parse
 from valiant_sdk.utils import abort, throw_feature_not_supported, throw_token_not_supported
 
