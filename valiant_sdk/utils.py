@@ -54,6 +54,19 @@ def throw_feature_not_supported(
     )
 
 
+def throw_code_analyzer_feature_not_supported(
+    feature_name: str
+):
+    throw_feature_not_supported("code_analyzer/" + feature_name)
+
+
+def throw_code_generator_feature_not_supported(
+    code_generator_name: str,
+    feature_name: str
+):
+    throw_feature_not_supported("code_generator/" + code_generator_name + "/" + feature_name)
+
+
 def throw_token_not_supported(
     token_type: str
 ):
