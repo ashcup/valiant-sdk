@@ -1,6 +1,6 @@
-from valiant_sdk.components import ASTNode, FunctionBody, PrintExpression
+from valiant_sdk.components import ASTNode, Comment, Expression, FunctionBody, MultiLineComment, PrintExpression, SingleLineComment
 from valiant_sdk.code_analysis import valiant_analyze
-from valiant_sdk.utils import load_text_file
+from valiant_sdk.utils import load_text_file, throw_feature_not_supported
 
 from .code_generator import ValiantCodeGenerator
 
@@ -21,7 +21,7 @@ class CPPCodeGenerator(ValiantCodeGenerator):
             valiant_ast: object
     ) -> str:
         # Analyze the source code.
-        code_analysis_report = valiant_analyze(valiant_ast)
+        code_analysis_report = valiant_analyze(valiant_ast, debug=False)
         # Get the main function body from the analyzed source code.
         main_function_body = code_analysis_report.body
         # Get a list of event handlers in the analyzed source code.
@@ -40,16 +40,41 @@ class CPPCodeGenerator(ValiantCodeGenerator):
     def _generate_main_function(self, main_function_body: FunctionBody) -> str:
         source_code = "int main(int argc, char *argv[])\n{\n"
         for statement in main_function_body:
-            node_source_code = self._generate_node(statement)
+            node_source_code = self._generate_statement(statement)
             if type(node_source_code) is str and len(node_source_code) > 0:
-                source_code += "    " + node_source_code + ";\n"
+                source_code += "    " + node_source_code + "\n"
         source_code += "}\n"
         return source_code
 
-    def _generate_node(self, node: ASTNode) -> str:
+    def _generate_multi_line_comment(self, node: MultiLineComment) -> str:
+        return "/* " + node.value + " */";
+
+    def _generate_single_line_comment(self, node: SingleLineComment) -> str:
+        return "// " + node.value;
+
+    def _generate_comment(self, node: Comment) -> str:
+        # Multi-line Comment
+        if isinstance(node, MultiLineComment) is True:
+            return self._generate_multi_line_comment(node)
+        # Single-line Comment
+        if isinstance(node, SingleLineComment) is True:
+            return self._generate_single_line_comment(node)
+        throw_feature_not_supported(str(type(node)))
+
+    def _generate_expression(self, node: Expression) -> str:
+        # Print Expression
         if isinstance(node, PrintExpression) is True:
             return self._generate_print_expression(node)
-        return ""
+        throw_feature_not_supported(str(type(node)))
+
+    def _generate_statement(self, node: ASTNode) -> str:
+        # Comments
+        if isinstance(node, Comment) is True:
+            return self._generate_comment(node)
+        # Expressions
+        if isinstance(node, Expression) is True:
+            return self._generate_expression(node) + ";"
+        throw_feature_not_supported(str(type(node)))
 
     def _generate_print_expression(self, node: ASTNode) -> str:
         return "valiant::print(" + str(node.message) + ")"

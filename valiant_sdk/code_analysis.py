@@ -4,42 +4,12 @@ from lark.lexer import Token # type: ignore
 from valiant_sdk.parsing import valiant_parse
 from valiant_sdk.utils import abort, throw_feature_not_supported, throw_token_not_supported
 
-from .components import ASTNode, EventHandler, FunctionBody, PrintExpression, TopLevelDefinition
+from .components import ASTNode, Comment, EventHandler, FunctionBody, MultiLineComment, PrintExpression, SingleLineComment, TopLevelDefinition
 
 
 class ValiantCodeAnalysisReport():
     '''
     An analysis report of Valiant source code.
-    '''
-
-    _body: FunctionBody = FunctionBody()
-    '''
-    A collection of top-level statements defined in the source code currently being parsed.
-    '''
-
-    _event_handlers = []
-    '''
-    A collection of event handlers defined in the source code currently being parsed.
-    '''
-
-    _functions = []
-    '''
-    A collection of functions defined in the source code currently being parsed.
-    '''
-
-    _imports = []
-    '''
-    A collection of modules imported in the source code currently being parsed.
-    '''
-
-    _includes = []
-    '''
-    A collection of files included in the source code currently being parsed.
-    '''
-
-    _types = []
-    '''
-    A collection of types defined in the source code currently being parsed.
     '''
 
     @property
@@ -56,7 +26,45 @@ class ValiantCodeAnalysisReport():
         '''
         return self._event_handlers
 
-    def __init__(self, valiant_ast):
+    def __init__(
+        self,
+        valiant_ast,
+        debug = False
+    ):
+        super().__init__()
+
+        self._body: FunctionBody = FunctionBody()
+        '''
+        A collection of top-level statements defined in the source code currently being parsed.
+        '''
+
+        self._event_handlers: list[EventHandler] = []
+        '''
+        A collection of event handlers defined in the source code currently being parsed.
+        '''
+
+        self._functions: list[FunctionBody] = []
+        '''
+        A collection of functions defined in the source code currently being parsed.
+        '''
+
+        self._imports: list[str] = []
+        '''
+        A collection of modules imported in the source code currently being parsed.
+        '''
+
+        self._includes: list[str] = []
+        '''
+        A collection of files included in the source code currently being parsed.
+        '''
+
+        self._types: list[str] = []
+        '''
+        A collection of types defined in the source code currently being parsed.
+        '''
+        if debug:
+            print(valiant_ast.pretty())
+            exit()
         # Analyze all top-level statements.
         for node in valiant_ast.children:
             self._analyze_top_level_definition(node)
@@ -93,11 +101,33 @@ class ValiantCodeAnalysisReport():
             # Add the event handler to the body.
             self._add_event_handler_to_body(event_handler)
 
-    def _handle_on_start(self, statement: Expression):
-        # If this node is a statement:
-        if statement is not None:
-            # Add the statement to the list.
-            self._body.append(statement)
+    def _analyze_comment(self, node: object) -> Comment:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is a multi-line comment:
+        if unboxed_node_type == "multi_line_comment":
+            # Analyze the comment.
+            return self._analyze_multi_line_comment(unboxed_node)
+        # If the unboxed node is a single-line comment:
+        if unboxed_node_type == "single_line_comment":
+            # Analyze the comment.
+            return self._analyze_single_line_comment(unboxed_node)
+        # Throw an error.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_multi_line_comment(self, node: object) -> MultiLineComment:
+        # Unbox the node.
+        comment = node.children[0]
+        # Return the comment.
+        return MultiLineComment(comment)
+
+    def _analyze_single_line_comment(self, node: object) -> SingleLineComment:
+        # Unbox the node.
+        comment = node.children[0]
+        # Return the comment.
+        return SingleLineComment(comment)
 
     def _analyze_event_handler(self, node: object) -> EventHandler:
         # Analyze the event name.
@@ -210,7 +240,11 @@ class ValiantCodeAnalysisReport():
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
         unboxed_node_type = unboxed_node.data
-        # If the unboxed node is valid:
+        # If the unboxed node is a comment:
+        if unboxed_node_type == "comment":
+            # Analyze the comment.
+            return self._analyze_comment(unboxed_node)
+        # If the unboxed node is an event handler:
         if unboxed_node_type == "event_handler":
             # Analyze the event handler.
             return self._analyze_event_handler(unboxed_node)
@@ -222,6 +256,10 @@ class ValiantCodeAnalysisReport():
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
         unboxed_node_type = unboxed_node.data
+        # If the unboxed node is valid:
+        if unboxed_node_type == "comment":
+            # Analyze the event handler.
+            return self._analyze_comment(unboxed_node)
         # If the unboxed node is valid:
         if unboxed_node_type == "expression":
             # Analyze the event handler.
@@ -254,6 +292,9 @@ class ValiantCodeAnalyzer():
     Analyze Valiant source code.
     '''
 
+    def __init__(self, debug: bool = False):
+        self.debug = debug
+
     def analyze(self, valiant_translation_unit: object | str):
         '''
         Analyze either an AST or a string of Valiant source code.
@@ -265,31 +306,31 @@ class ValiantCodeAnalyzer():
         # Otherwise:
         else:
             # Analyze the AST.
-            return self._analyze_ast(valiant_translation_unit)
+            return self._analyze_ast(valiant_translation_unit, self.debug)
 
-    def _analyze_ast(self, valiant_ast: object):
+    def _analyze_ast(self, valiant_ast: object, debug: bool = False):
         '''
         Analyze a Valiant AST.
         '''
         # Analyze the AST and return the report.
-        return ValiantCodeAnalysisReport(valiant_ast)
+        return ValiantCodeAnalysisReport(valiant_ast, debug)
 
-    def _analyze_source_code(self, valiant_source_code: str):
+    def _analyze_source_code(self, valiant_source_code: str, debug: bool = False):
         '''
         Analyze a Valiant AST.
         '''
         # Parse the source code.
         valiant_ast = valiant_parse(valiant_source_code)
         # Analyze the AST obtained from parsing and return the report.
-        return ValiantCodeAnalysisReport(valiant_ast)
+        return ValiantCodeAnalysisReport(valiant_ast, debug)
 
 
-def valiant_analyze(valiant_translation_unit: object | str):
+def valiant_analyze(valiant_translation_unit: object | str, debug: bool = False) -> ValiantCodeAnalysisReport:
     '''
     Analyze either an AST or a string of Valiant source code.
     '''
     # Create a new instance of the code analyzer.
-    code_analyzer = ValiantCodeAnalyzer()
+    code_analyzer = ValiantCodeAnalyzer(debug)
     # Analyze the Valiant AST.
     code_analysis_report = code_analyzer.analyze(valiant_translation_unit)
     # Return the code analysis report.

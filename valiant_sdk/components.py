@@ -5,26 +5,38 @@ class ASTNode:
     A node within an Abstract Syntax Tree (AST).
     '''
 
-    _children: list = []
-    '''
-    A list of nodes connected above this node in the tree.
-    '''
-
     @property
     def child_count(self) -> int:
-        return len(self._children)
+        return len(self.children)
 
     @property
     def children(self) -> list:
+        '''
+        A list of nodes connected above this node in the tree.
+        '''
         return self._children
 
     @property
     def first_child(self) -> object:
-        return self._children[0]
+        return self.children[0]
+
+    @first_child.setter
+    def first_child(self, value: object):
+        self.children[0] = value
 
     @property
     def last_child(self) -> object:
-        return self._children[self.child_count - 1]
+        return self.children[-1]
+
+    @last_child.setter
+    def last_child(self, value: object):
+        self.children[-1] = value
+
+    def __init__(self):
+        self._children = []
+        '''
+        A list of nodes connected above this node in the tree.
+        '''
 
     def __str__(self) -> str:
         return ""
@@ -41,7 +53,49 @@ class Expression(ASTNode):
     x = round(exp(3.74))
     ```
     '''
-    pass
+
+    def __init__(self):
+        super().__init__()
+
+
+# Comments
+
+class Comment(ASTNode):
+    '''
+    A comment that helps explain source code but has no actual effect.
+    '''
+
+    @property
+    def value(self) -> str:
+        return self.first_child
+
+    @value.setter
+    def value(self, value: str):
+        self.first_child = str(value).strip()
+
+    def __init__(self, value):
+        super().__init__()
+        self.children.append(None)
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+class MultiLineComment(Comment):
+    '''
+    A multi-line comment that helps explain source code but has no actual effect.
+    '''
+
+    def __str__(self):
+        return ";;;\n" + self.value + "\n;;;"
+
+class SingleLineComment(Comment):
+    '''
+    A single-line comment that helps explain source code but has no actual effect.
+    '''
+
+    def __str__(self):
+        return ";; " + self.value
 
 
 # Statements
@@ -60,6 +114,7 @@ class PrintExpression(Expression):
         return self._message
 
     def __init__(self, message: Expression):
+        super().__init__()
         self._message = message
 
     def __str__(self) -> str:
@@ -86,13 +141,14 @@ class FunctionBody(ASTNode):
 
     @property
     def statements(self) -> list[Expression]:
-        return self._children
+        return self.children
 
     @statements.setter
     def statements(self, value: list[Expression]):
         self._children = value
 
     def __init__(self, statements: list[Expression] = []):
+        super().__init__()
         if statements is None or not isinstance(statements, list):
             statements = []
         self.statements = statements
@@ -113,6 +169,19 @@ class FunctionBody(ASTNode):
         # Return the statement.
         return statement
 
+    def __str__(self):
+        # Start with empty source code.
+        source_code = ""
+        # Get the list of statements.
+        statements = self.statements
+        # Loop each statement:
+        for statement in statements:
+            # Add the source code for the statement to the source code for the function body.
+            source_code += "    " + str(statement) + "\n"
+        # Return the source code for the function body.
+        return source_code
+
+
     def append(self, statement: Expression):
         self.statements.append(statement)
 
@@ -123,28 +192,28 @@ class TopLevelDefinition(ASTNode):
     '''
     A top-level definition.
     '''
-    pass
+
+    def __init__(self):
+        super().__init__()
 
 class EventHandler(TopLevelDefinition):
     '''
     An event handler.
     '''
 
-    _name: str = "start"
-    '''
-    The name of the event this handler is for.
-    '''
-
     @property
-    def body(self) -> list[Expression]:
-        return self._children
+    def body(self) -> FunctionBody:
+        return self._body
 
     @body.setter
-    def body(self, value: list[Expression]):
-        self._children = value
+    def body(self, value: FunctionBody):
+        self._body = value
 
     @property
     def name(self) -> str:
+        '''
+        The name of the event this handler is for.
+        '''
         return self._name
 
     @name.setter
@@ -153,16 +222,22 @@ class EventHandler(TopLevelDefinition):
         if type(value) is not str:
             # Normalize the value.
             value = str(value)
+        # Set the value.
         self._name = value
 
     def __init__(self, event_name: str, body: FunctionBody = None):
+        super().__init__()
+        self._body = FunctionBody()
+        self._name = "start"
+        '''
+        The name of the event this handler is for.
+        '''
         # If body is not a valid function body:
-        if body is None or not isinstance(body, FunctionBody):
+        if body is not None and isinstance(body, FunctionBody):
             # Create a new function body.
-            body = FunctionBody()
+            self.body = body
         # Set the properties of this event handler.
         self.name = str(event_name)
-        self.body = body
 
     def add_statement(self, statement: Expression):
         self.body.statements.append(statement)

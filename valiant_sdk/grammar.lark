@@ -1,62 +1,94 @@
-start: top_level_definition*
+start:  top_level_definition*
 
 // Top-level definitions (Class definitions, event handlers, function definitions, etc.)
 
-top_level_definition: event_handler
+top_level_definition:   comment
+|                       event_handler
 
-event_handler: event_name function_body
+event_handler:  event_name function_body
 
 // Event names
 
-event_name: event_name_draw | event_name_start | event_name_stop | event_name_tick
+event_name: event_name_draw
+|           event_name_start
+|           event_name_stop
+|           event_name_tick
 
-event_name_draw: "on" software_type? ("draw" | "render")
+event_name_draw:    "on" software_type? ("draw" | "render")
 
-event_name_start: "on" software_type? ("begin" | "launch" | "start")
+event_name_start:   "on" software_type? ("begin" | "launch" | "start")
 
-event_name_stop: "on" software_type? ("end" | "exit" | "shutdown" | "stop")
+event_name_stop:    "on" software_type? ("end" | "exit" | "shutdown" | "stop")
 
-event_name_tick: "on" software_type? ("tick" | "logic")
+event_name_tick:    "on" software_type? ("tick" | "logic")
+
+// Comments
+
+comment:    multi_line_comment
+|           single_line_comment
+
+MULTI_LINE_COMMENT_BODY:    /[^;]+/
+
+SINGLE_LINE_COMMENT_BODY:   /.+/
+
+multi_line_comment: ";;;" MULTI_LINE_COMMENT_BODY ";;;"
+
+single_line_comment:    ";;" SINGLE_LINE_COMMENT_BODY "\n"
 
 // Functions
 
-function_body: "{" statement* "}"
+function_body:  "{" statement* "}"
 
 // Statements
 
-statement: expression "\n"
+statement:  comment
+|           expression (";")?
 
-print_expression: "print" expression
+print_expression:   "print" expression
 
 // Expressions
 
-expression: print_expression | math_expression | symbol | literal
+expression: print_expression
+|           math_expression
+|           variable
+|           literal
 
 // PEMDAS (Parentheses, Exponentiation, Multiplication, Division, Addition, Subtraction)
 
-math_expression: "(" expression ")" | exponent_expression | multiply_expression | divide_expression | add_expression | subtract_expression
+math_expression:    "(" expression ")"
+|                   exponent_expression
+|                   multiply_expression
+|                   divide_expression
+|                   add_expression
+|                   subtract_expression
 
-exponent_expression: expression "^" expression
+exponent_expression:    expression "^" expression
 
-multiply_expression: expression "*" expression
+multiply_expression:    expression "*" expression
 
-divide_expression: expression "/" expression
+divide_expression:  expression "/" expression
 
 add_expression: expression "+" expression
 
-subtract_expression: expression "-" expression
+subtract_expression:    expression "-" expression
 
 // Types
 
-software_type: "application" | "app" | "game" | "program" | "software" | "window"
+software_type:  "application"
+|               "app"
+|               "game"
+|               "program"
+|               "software"
+|               "window"
 
-// Symbols
+// Variables
 
-symbol: CNAME
+variable: "{" CNAME "}"
 
 // Literals
 
-literal: number_literal | string_literal
+literal:    number_literal
+|           string_literal
 
 number_literal: SIGNED_NUMBER
 
