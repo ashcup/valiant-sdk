@@ -4,6 +4,9 @@ import argparse
 def _get_default_output(
     format: str
 ) -> str:
+    # Windows Executable
+    if format == "exe":
+        return "program.exe"
     # C
     if format == "c":
         return "main.c"
@@ -19,6 +22,8 @@ def _get_default_output(
     # TypeScript
     if format == "ts":
         return "index.ts"
+    # Default
+    return "program"
 
 
 def abort(
