@@ -44,7 +44,7 @@ subtract_expression: expression "-" expression
 
 // Types
 
-software_type: "application" | "app" | "game" | "program" | "software"
+software_type: "application" | "app" | "game" | "program" | "software" | "window"
 
 // Symbols
 
