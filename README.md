@@ -9,7 +9,7 @@ Valiant is designed to be easily read and written by beginners and is modelled c
 * `g++`
 
 ### Windows
-* [LLVM](https://github.com/llvm/llvm-project/releases)
+* [LLVM](https://github.com/llvm/llvm-project/releases) *(Direct download links below)*
   * [AMD/Intel (64-bit)](https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/LLVM-20.1.0-rc1-win64.exe)
   * [AMD/Intel (32-bit)](https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/LLVM-20.1.0-rc1-win32.exe)
 
