@@ -8,11 +8,13 @@ event_handler: event_name function_body
 
 // Event names
 
-event_name: event_name_start | event_name_stop
+event_name: event_name_draw | event_name_start | event_name_stop
 
-event_name_start: "on" software_type? "start"
+event_name_draw: "on" software_type? ("draw" | "render")
 
-event_name_stop: "on" software_type? "stop"
+event_name_start: "on" software_type? ("begin" | "launch" | "start")
+
+event_name_stop: "on" software_type? ("end" | "exit" | "shutdown" | "stop")
 
 // Functions
 
