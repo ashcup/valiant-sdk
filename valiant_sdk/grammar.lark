@@ -1,20 +1,58 @@
-start: statement+
+start: top_level_definition*
 
-statement: print_statement
+// Top-level definitions (Class definitions, event handlers, function definitions, etc.)
 
-print_statement: "print" expression
+top_level_definition: event_handler
 
-expression: math_expression | identifier | literal
+event_handler: event_name function_body
 
-math_expression: "(" expression ")"
+// Event names
 
-identifier: CNAME
+event_name: event_name_start
+
+event_name_start: "on" "start"
+
+// Functions
+
+function_body: "{" statement* "}"
+
+// Statements
+
+statement: expression "\n"
+
+print_expression: "print" expression
+
+// Expressions
+
+expression: print_expression | math_expression | symbol | literal
+
+// PEMDAS (Parentheses, Exponentiation, Multiplication, Division, Addition, Subtraction)
+
+math_expression: "(" expression ")" | exponent_expression | multiply_expression | divide_expression | add_expression | subtract_expression
+
+exponent_expression: expression "^" expression
+
+multiply_expression: expression "*" expression
+
+divide_expression: expression "/" expression
+
+add_expression: expression "+" expression
+
+subtract_expression: expression "-" expression
+
+// symbols
+
+symbol: CNAME
+
+// Literals
 
 literal: number_literal | string_literal
 
 number_literal: SIGNED_NUMBER
 
 string_literal: ESCAPED_STRING
+
+// Imports
 
 %import common.CNAME
 %import common.ESCAPED_STRING

@@ -1,25 +1,6 @@
 import argparse
 
 
-def abort(
-    code: int = 0xFFFFFFFF,
-    message: str = ""
-):
-    '''
-    Abort the program by printing `message` and then returning `code`.
-    '''
-    # If a message was provided:
-    if (type(message) is str and len(message) > 0):
-        # Print the error message.
-        print(message)
-    # Otherwise:
-    else:
-        # Print a generic error message.
-        print("An unknown error occured. ")
-    # Exit the program, returning the provided exit code.
-    exit(code)
-
-
 def _get_default_output(
     format: str
 ) -> str:
@@ -38,6 +19,43 @@ def _get_default_output(
     # TypeScript
     if format == "ts":
         return "index.ts"
+
+
+def abort(
+    code: int = 0xFFFFFFFF,
+    message: str = ""
+):
+    '''
+    Abort the program by printing `message` and then returning `code`.
+    '''
+    # If a message was provided:
+    if (type(message) is str and len(message) > 0):
+        # Print the error message.
+        print("[Error " + hex(code) + "] " + message)
+    # Otherwise:
+    else:
+        # Print a generic error message.
+        print("[Error " + hex(code) + "] An unknown error occured. ")
+    # Exit the program, returning the provided exit code.
+    exit(code)
+
+
+def throw_feature_not_supported(
+    feature_name: str
+):
+    abort(
+        code = 0x111E_ED42,
+        message = "Feature not yet supported: " + feature_name
+    )
+
+
+def throw_token_not_supported(
+    token_type: str
+):
+    abort(
+        code = 0x274A_B373,
+        message = "Token type not supported: " + token_type
+    )
 
 
 def load_text_file(

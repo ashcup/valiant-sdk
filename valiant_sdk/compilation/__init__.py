@@ -1,3 +1,6 @@
+from valiant_sdk.code_generation.cpp import CPPCodeGenerator
+from valiant_sdk.utils import load_text_files_as_one
+
 from . import compiler
 from . import cpp
 

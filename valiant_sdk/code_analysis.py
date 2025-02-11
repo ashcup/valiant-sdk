@@ -1,8 +1,10 @@
+from ast import Expression
+from lark import Tree
 from lark.lexer import Token
 from valiant_sdk.parsing import valiant_parse
-from valiant_sdk.utils import abort
+from valiant_sdk.utils import abort, throw_feature_not_supported, throw_token_not_supported
 
-from .components import ASTNode, IntegerLiteral, NumberLiteral, PrintExpression, StringLiteral
+from .components import ASTNode, EventHandler, FunctionBody, PrintExpression, TopLevelDefinition
 
 
 class ValiantCodeAnalysisReport():
@@ -10,9 +12,14 @@ class ValiantCodeAnalysisReport():
     An analysis report of Valiant source code.
     '''
 
-    _body = []
+    _body: FunctionBody = FunctionBody()
     '''
     A collection of top-level statements defined in the source code currently being parsed.
+    '''
+
+    _event_handlers = []
+    '''
+    A collection of event handlers defined in the source code currently being parsed.
     '''
 
     _functions = []
@@ -36,96 +43,210 @@ class ValiantCodeAnalysisReport():
     '''
 
     @property
-    def body(self) -> list:
+    def body(self) -> FunctionBody:
         '''
         A collection of top-level statements defined in the source code currently being parsed.
         '''
         return self._body
 
+    @property
+    def event_handlers(self) -> list[EventHandler]:
+        '''
+        A collection of event handlers defined in the source code currently being parsed.
+        '''
+        return self._event_handlers
+
     def __init__(self, valiant_ast):
-        # Add all top-level statements to the body.
+        # Analyze all top-level statements.
         for node in valiant_ast.children:
-            self._analyze_node(node)
+            self._analyze_top_level_definition(node)
+        # Add all event handlers to the body.
+        self._add_event_handlers_to_body()
 
-    def _analyze_node(self, node: ASTNode) -> ASTNode:
-        # If the node is a token:
-        if isinstance(node, Token) is True:
-            return self._analyze_token(node)
-        # If the node is a token:
-        if hasattr(node, "children") is False:
-            abort(
-                code = 0x49DF_73E2,
-                message = "Invalid node: " + str(node)
-            )
-        if hasattr(node, "data") is True:
-            first_child_node = node.children[0]
-            node_type = node.data
-            if node_type == "expression":
-                return self._analyze_node(first_child_node)
-            if node_type == "literal":
-                return self._analyze_node(first_child_node)
-            if node_type == "string_literal":
-                literal = StringLiteral()
-                literal.value = first_child_node.value
-                return literal
-        # Loop all children of the node:
-        for child_node in node.children:
-            # Assume this node is not a token until proven otherwise.
-            is_token = False
-            # If the node is a token:
-            if hasattr(child_node, "data") is False:
-                is_token = True
-            # If the child node has no data:
-            elif child_node.data is None:
-                is_token = True
-            if is_token is True:
-                dir(node)
-                exit
-                # Analyze the child node.
-                self._analyze_node(child_node)
-            # Otherwise:
-            else:
-                # Assume this node isn't a statement until proven otherwise.
-                statement = None
-                # Get the child node's type.
-                child_node_type = child_node.data
-                # If the child node is a print statement:
-                if (child_node_type == "literal"):
-                    # Get the subclass of the literal.
-                    return self._analyze_node(child_node.children[0])
-                # If the child node is a print statement:
-                elif (child_node_type == "print_statement"):
-                    # Get the expression to print.
-                    expression = self._analyze_node(child_node.children[0])
-                    # Get the statement.
-                    statement = PrintExpression(expression)
-                # Otherwise:
-                else:
-                    # Throw error "Feature not yet supported: {child_node_type}".
-                    print("Feature not yet supported: " + child_node_type)
-                    # Stop the program.
-                    exit(1)
-                # If this node is a statement:
-                if statement is not None:
-                    # Add the statement to the list.
-                    self._body.append(statement)
+    def _add_event_handler_to_body(self, event_handler: EventHandler):
+        # Get the event handler's body.
+        function_body = event_handler.body
+        # Loop all statements in the event handler's body.
+        for statement in function_body:
+            # Add the statement to the body.
+            self.body.append(statement)
 
-    def _analyze_token(self, token: Token):
+    def _add_event_handlers_to_body(self):
+        # Get all of the event handlers registered in the analyzed source code.
+        event_handlers = self.event_handlers
+        # Create a mapping of event names to lists of event handlers matching that name.
+        event_handler_map: dict[str, list[EventHandler]] = {}
+        event_handler_map["start"] = []
+        event_handler_map["stop"] = []
+        # Loop each event handler:
+        for event_handler in event_handlers:
+            event_name = event_handler.name
+            if event_handler_map[event_name] is None:
+                event_handler_map[event_name] = []
+            event_handler_map[event_name].append(event_handler)
+        # Loop each start event handler:
+        for event_handler in event_handler_map["start"]:
+            # Add the event handler to the body.
+            self._add_event_handler_to_body(event_handler)
+        # Loop each stop event handler:
+        for event_handler in event_handler_map["stop"]:
+            # Add the event handler to the body.
+            self._add_event_handler_to_body(event_handler)
+
+    def _handle_on_start(self, statement: Expression):
+        # If this node is a statement:
+        if statement is not None:
+            # Add the statement to the list.
+            self._body.append(statement)
+
+    def _analyze_event_handler(self, node: object) -> EventHandler:
+        # Analyze the event name.
+        event_name_node = node.children[0]
+        if event_name_node.data != "event_name":
+            throw_feature_not_supported(event_name_node)
+        event_name = self._analyze_event_name(event_name_node)
+        # Validate the event handler's body.
+        function_body_node = node.children[1]
+        if function_body_node.data != "function_body":
+            throw_feature_not_supported(function_body_node)
+        # Analyze the event handler's body.
+        function_body = self._analyze_function_body(function_body_node)
+        # Create the event handler.
+        event_handler = EventHandler(event_name, function_body)
+        # Register the event handler.
+        self.event_handlers.append(event_handler)
+        # Return the event handler.
+        return event_handler
+
+    def _analyze_event_name(self, node: object) -> str:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type: str = unboxed_node.data
+        # Get the event's name.
+        event_name = unboxed_node_type.split("event_name_")[1]
+        # If the event's name is a valid event name:
+        if type(event_name) is str and len(event_name) > 0:
+            # Return the literal.
+            return event_name
+        # Throw an error if an unsupported feature was used.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_expression(self, node: object) -> Expression:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is a literal:
+        if unboxed_node_type == "literal":
+            # Analyze the event handler.
+            return self._analyze_literal(unboxed_node)
+        # If the unboxed node is a print expression:
+        if unboxed_node_type == "print_expression":
+            # Analyze the event handler.
+            return self._analyze_print_expression(unboxed_node)
+        # Throw an error.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_function_body(self, node: object) -> FunctionBody:
+        # Get a list of all statements in the function body.
+        statement_nodes = node.children
+        # Create an empty list of statements.
+        statements = []
+        # For each statement node:
+        for statement_node in statement_nodes:
+            # Get the type of the statement node.
+            statement_node_type = statement_node.data
+            # If the node is not a valid statement:
+            if statement_node_type != "statement":
+                # Throw an error.
+                throw_feature_not_supported(statement_node_type)
+            # Add the analyzed statement to the list.
+            statement = self._analyze_statement(statement_node)
+            statements.append(statement)
+        # Return the function body.
+        return FunctionBody(statements)
+
+    def _analyze_literal(self, node: object) -> object:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is an integer literal:
+        if unboxed_node_type == "integer_literal":
+            # Analyze the unboxed node.
+            return self._analyze_integer_literal(unboxed_node)
+        # If the unboxed node is a number literal:
+        if unboxed_node_type == "number_literal":
+            # Analyze the unboxed node.
+            return self._analyze_number_literal(unboxed_node)
+        # If the unboxed node is a string literal:
+        if unboxed_node_type == "string_literal":
+            # Analyze the unboxed node.
+            return self._analyze_string_literal(unboxed_node)
+        # Throw an error.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_print_expression(self, node: object) -> PrintExpression:
+        # Unbox the node.
+        message_node = node.children[0]
+        # Get the unboxed node's type.
+        message_node_type = message_node.data
+        # If the unboxed node is invalid:
+        if message_node_type != "expression":
+            # Throw an error.
+            throw_feature_not_supported(message_node_type)
+        # Analyze the message.
+        message = self._analyze_expression(message_node)
+        # Return the expression.
+        return PrintExpression(message)
+
+    def _analyze_string_literal(self, node: object) -> str:
+        unboxed_value = node.children[0]
+        return str(unboxed_value)
+
+    def _analyze_top_level_definition(self, node: object) -> TopLevelDefinition:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is valid:
+        if unboxed_node_type == "event_handler":
+            # Analyze the event handler.
+            return self._analyze_event_handler(unboxed_node)
+        # Throw an error.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_statement(self, node: object) -> Expression:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is valid:
+        if unboxed_node_type == "expression":
+            # Analyze the event handler.
+            return self._analyze_expression(unboxed_node)
+        # Throw an error.
+        throw_feature_not_supported(unboxed_node_type)
+
+    def _analyze_token(self, token: Token) -> object:
         '''
         Analyze a single token of Valiant source code.
         '''
+        literal = None
         # If the token is a string:
         if token.type == "ESCAPED_STRING":
-            literal = StringLiteral()
-            literal.value = token.value
-            return literal
+            literal = token.value
         # If the token is a number:
         elif token.type == "SIGNED_NUMBER":
-            literal = NumberLiteral()
-            literal.value = float(token.value)
+            literal = token.value
+        # If the token was successfully parsed:
+        if literal is not None:
+            # Return the parsed token.
             return literal
         # Abort due to unsupported token type.
-        abort(0x274A_B373, "Token type not supported: " + token.type)
+        throw_token_not_supported(token.type)
+
 
 
 class ValiantCodeAnalyzer():

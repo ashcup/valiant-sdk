@@ -19,4 +19,8 @@ if output_path is None:
     output_path = input_paths[0] + "." + output_format
 
 # Compile the input files and write the generated source code into the output file.
-valiant_compile(input_paths, output_path, output_format)
+valiant_compile(
+    input_paths,
+    output_path,
+    output_format
+)
