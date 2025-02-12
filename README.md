@@ -5,6 +5,12 @@ Valiant is designed to be easily read and written by beginners and is modelled c
 
 ## Dependencies
 
+### Python
+
+```sh
+pip3 install lark
+```
+
 ### Linux
 * `g++`
 
