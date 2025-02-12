@@ -58,6 +58,63 @@ class Expression(ASTNode):
         super().__init__()
 
 
+class FunctionCallExpression(Expression):
+    '''
+    A function call expression.
+
+    Example:
+    ```
+    round(42.1)
+    ```
+    '''
+
+    def __init__(self, global_id: str, args: list[Expression]):
+        super().__init__()
+        self.global_id = global_id
+        self.args = args
+
+
+class PrintExpression(Expression):
+    '''
+    A `print` expression.
+
+    Example:
+    ```
+    print "Hello, world!"
+    ```
+    '''
+
+    @property
+    def message(self) -> Expression:
+        return self._message
+
+    def __init__(self, message: Expression):
+        super().__init__()
+        self._message = message
+
+    def __str__(self) -> str:
+        return "print " + str(self.message)
+
+class VariableExpression(Expression):
+    '''
+    A variable.
+    '''
+
+    @property
+    def global_id(self) -> str:
+        return self.children[0]
+
+    @global_id.setter
+    def global_id(self, value: str):
+        self.children[0] = value
+
+    def __init__(self, global_id: str):
+        super().__init__()
+        self.children.append(None)
+        self.global_id = str(global_id)
+
+
+
 # Comments
 
 class Comment(ASTNode):
@@ -96,29 +153,6 @@ class SingleLineComment(Comment):
 
     def __str__(self):
         return ";; " + self.value
-
-
-# Statements
-
-class PrintExpression(Expression):
-    '''
-    A `print` expression.
-
-    Example:
-    ```
-    print "Hello, world!"
-    ```
-    '''
-    @property
-    def message(self) -> Expression:
-        return self._message
-
-    def __init__(self, message: Expression):
-        super().__init__()
-        self._message = message
-
-    def __str__(self) -> str:
-        return "print " + str(self.message)
 
 
 # Functions
@@ -183,6 +217,9 @@ class FunctionBody(ASTNode):
 
 
     def append(self, statement: Expression):
+        '''
+        Append a statement to the end of the function body.
+        '''
         self.statements.append(statement)
 
 

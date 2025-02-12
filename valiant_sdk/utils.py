@@ -41,8 +41,18 @@ def abort(
     else:
         # Print a generic error message.
         print("[Error " + hex(code) + "] An unknown error occured. ")
+    # DEBUG: To debug errors, uncomment the following line and re-run.
+    raise Exception()
     # Exit the program, returning the provided exit code.
     exit(code)
+
+
+def list_str(values: list[object]) -> list[str]:
+    converted_values = []
+    for value in values:
+        converted_value = str(value)
+        converted_values.append(converted_value)
+    return converted_values
 
 
 def throw_feature_not_supported(
@@ -62,9 +72,9 @@ def throw_code_analyzer_feature_not_supported(
 
 def throw_code_generator_feature_not_supported(
     code_generator_name: str,
-    feature_name: str
+    feature: object
 ):
-    throw_feature_not_supported("code_generator/" + code_generator_name + "/" + feature_name)
+    throw_feature_not_supported("code_generator/" + code_generator_name + "/" + feature.__class__.__name__)
 
 
 def throw_token_not_supported(

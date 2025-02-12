@@ -1,8 +1,3 @@
-import os
-import random
-import subprocess
-import tempfile
-
 from valiant_sdk.code_generation.cpp import CPPCodeGenerator
 from valiant_sdk.utils import load_text_files_as_one
 
@@ -22,31 +17,10 @@ def valiant_compile(
     Compile Valiant source code into the target programming language.
     '''
     if output_format == "exe":
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            # Create a new instance of the C++ compiler.
-            compiler = CPPCompiler()
-            # Compile the Valiant source code into C++ IL code.
-            il_id = random.randint(0x0000_0000, 0xFFFF_FFFF)
-            il_path = os.path.join(tmp_dir, str(il_id) + ".cpp")
-            compiler.compile(input_files, il_path)
-            # Compile the C++ IL code into an executable.
-            clang_dir = "C:\\" + os.path.join(
-                "Program Files",
-                "LLVM",
-                "bin",
-            )
-            cpp_compiler_path = os.path.join(
-                clang_dir,
-                "clang++.exe"
-            )
-            # Create the command to compile the C++ IL code.
-            command = [ cpp_compiler_path ]
-            command.append(il_path)
-            command.append("-o")
-            command.append(output_path)
-            # Run the command.
-            subprocess.run(command)
-            return
+        # Create a new instance of the C++ compiler.
+        compiler = CPPCompiler()
+        compiler.build_exe(input_files, output_path)
+        return
     if output_format == "c":
         # TODO: Implement support for C as a target programming language.
         pass

@@ -2,9 +2,9 @@ from ast import Expression
 from lark import Tree # type: ignore
 from lark.lexer import Token # type: ignore
 from valiant_sdk.parsing import valiant_parse
-from valiant_sdk.utils import abort, throw_feature_not_supported, throw_token_not_supported
+from valiant_sdk.utils import abort, throw_code_analyzer_feature_not_supported, throw_token_not_supported
 
-from .components import ASTNode, Comment, EventHandler, FunctionBody, MultiLineComment, PrintExpression, SingleLineComment, TopLevelDefinition
+from .components import ASTNode, Comment, EventHandler, FunctionBody, FunctionCallExpression, MultiLineComment, PrintExpression, SingleLineComment, TopLevelDefinition, VariableExpression
 
 
 class ValiantCodeAnalysisReport():
@@ -89,7 +89,7 @@ class ValiantCodeAnalysisReport():
         # Loop each event handler:
         for event_handler in event_handlers:
             event_name = event_handler.name
-            if event_handler_map[event_name] is None:
+            if event_name not in event_handler_map:
                 event_handler_map[event_name] = []
             event_handler_map[event_name].append(event_handler)
         # Loop each start event handler:
@@ -115,7 +115,23 @@ class ValiantCodeAnalysisReport():
             # Analyze the comment.
             return self._analyze_single_line_comment(unboxed_node)
         # Throw an error.
-        throw_feature_not_supported(unboxed_node_type)
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
+
+    def _analyze_csv(self, node: object | None) -> list[Expression]:
+        # Create an empty CSV row.
+        csv_row = []
+        # If a CSV node is present:
+        if node is not None:
+            # If the CSV node is valid:
+            if node.data == "csv":
+                # Loop each element in the CSV node:
+                for raw_csv_element in node.children:
+                    # Analyze the CSV element.
+                    csv_element = self._analyze_expression(raw_csv_element)
+                    # Add the element to the row.
+                    csv_row.append(csv_element)
+        # Return the CSV row.
+        return csv_row
 
     def _analyze_multi_line_comment(self, node: object) -> MultiLineComment:
         # Unbox the node.
@@ -133,12 +149,12 @@ class ValiantCodeAnalysisReport():
         # Analyze the event name.
         event_name_node = node.children[0]
         if event_name_node.data != "event_name":
-            throw_feature_not_supported(event_name_node)
+            throw_code_analyzer_feature_not_supported(event_name_node)
         event_name = self._analyze_event_name(event_name_node)
         # Validate the event handler's body.
         function_body_node = node.children[1]
         if function_body_node.data != "function_body":
-            throw_feature_not_supported(function_body_node)
+            throw_code_analyzer_feature_not_supported(function_body_node)
         # Analyze the event handler's body.
         function_body = self._analyze_function_body(function_body_node)
         # Create the event handler.
@@ -160,7 +176,7 @@ class ValiantCodeAnalysisReport():
             # Return the literal.
             return event_name
         # Throw an error if an unsupported feature was used.
-        throw_feature_not_supported(unboxed_node_type)
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
     def _analyze_expression(self, node: object) -> Expression:
         # Unbox the node.
@@ -169,14 +185,39 @@ class ValiantCodeAnalysisReport():
         unboxed_node_type = unboxed_node.data
         # If the unboxed node is a literal:
         if unboxed_node_type == "literal":
-            # Analyze the event handler.
+            # Analyze the unboxed node.
             return self._analyze_literal(unboxed_node)
+        # If the unboxed node is a function call expression:
+        if unboxed_node_type == "function_call_expression":
+            # Analyze the unboxed node.
+            return self._analyze_function_call_expression(unboxed_node)
         # If the unboxed node is a print expression:
         if unboxed_node_type == "print_expression":
-            # Analyze the event handler.
+            # Analyze the unboxed node.
             return self._analyze_print_expression(unboxed_node)
+        # If the unboxed node is a variable expression:
+        if unboxed_node_type == "variable_expression":
+            # Analyze the unboxed node.
+            return self._analyze_variable_expression(unboxed_node)
         # Throw an error.
-        throw_feature_not_supported(unboxed_node_type)
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
+
+    def _analyze_function_call_expression(self, node: object) -> FunctionCallExpression:
+        # Unbox the node.
+        global_id_node = node.children[0]
+        csv_node = None
+        if len(node.children) >= 2:
+            csv_node = node.children[1]
+        # Validate the function name node.
+        global_id = None
+        if global_id_node.data == "global_id":
+            global_id = global_id_node.children[0]
+        if global_id is None:
+            throw_code_analyzer_feature_not_supported(global_id_node.data)
+        # Analyze the function arguments node.
+        csv_row = self._analyze_csv(csv_node)
+        # Return the expression.
+        return FunctionCallExpression(global_id, csv_row)
 
     def _analyze_function_body(self, node: object) -> FunctionBody:
         # Get a list of all statements in the function body.
@@ -190,7 +231,7 @@ class ValiantCodeAnalysisReport():
             # If the node is not a valid statement:
             if statement_node_type != "statement":
                 # Throw an error.
-                throw_feature_not_supported(statement_node_type)
+                throw_code_analyzer_feature_not_supported(statement_node_type)
             # Add the analyzed statement to the list.
             statement = self._analyze_statement(statement_node)
             statements.append(statement)
@@ -200,22 +241,10 @@ class ValiantCodeAnalysisReport():
     def _analyze_literal(self, node: object) -> object:
         # Unbox the node.
         unboxed_node = node.children[0]
-        # Get the unboxed node's type.
-        unboxed_node_type = unboxed_node.data
-        # If the unboxed node is an integer literal:
-        if unboxed_node_type == "integer_literal":
-            # Analyze the unboxed node.
-            return self._analyze_integer_literal(unboxed_node)
-        # If the unboxed node is a number literal:
-        if unboxed_node_type == "number_literal":
-            # Analyze the unboxed node.
-            return self._analyze_number_literal(unboxed_node)
-        # If the unboxed node is a string literal:
-        if unboxed_node_type == "string_literal":
-            # Analyze the unboxed node.
-            return self._analyze_string_literal(unboxed_node)
-        # Throw an error.
-        throw_feature_not_supported(unboxed_node_type)
+        # Unbox the value.
+        unboxed_value = unboxed_node.children[0]
+        # Return the unboxed value.
+        return unboxed_value
 
     def _analyze_print_expression(self, node: object) -> PrintExpression:
         # Unbox the node.
@@ -225,7 +254,7 @@ class ValiantCodeAnalysisReport():
         # If the unboxed node is invalid:
         if message_node_type != "expression":
             # Throw an error.
-            throw_feature_not_supported(message_node_type)
+            throw_code_analyzer_feature_not_supported(message_node_type)
         # Analyze the message.
         message = self._analyze_expression(message_node)
         # Return the expression.
@@ -249,7 +278,7 @@ class ValiantCodeAnalysisReport():
             # Analyze the event handler.
             return self._analyze_event_handler(unboxed_node)
         # Throw an error.
-        throw_feature_not_supported(unboxed_node_type)
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
     def _analyze_statement(self, node: object) -> Expression:
         # Unbox the node.
@@ -265,7 +294,7 @@ class ValiantCodeAnalysisReport():
             # Analyze the event handler.
             return self._analyze_expression(unboxed_node)
         # Throw an error.
-        throw_feature_not_supported(unboxed_node_type)
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
     def _analyze_token(self, token: Token) -> object:
         '''
@@ -284,6 +313,14 @@ class ValiantCodeAnalysisReport():
             return literal
         # Abort due to unsupported token type.
         throw_token_not_supported(token.type)
+
+    def _analyze_variable_expression(self, node: object) -> VariableExpression:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Unbox the value.
+        unboxed_value = unboxed_node.children[0]
+        # Return the expression.
+        return VariableExpression(unboxed_value)
 
 
 

@@ -49,9 +49,16 @@ print_expression:   "print" expression
 // Expressions
 
 expression: print_expression
+|           function_call_expression
 |           math_expression
-|           variable
+|           variable_expression
 |           literal
+
+function_call_expression:   global_id "(" csv? ")"
+
+// Comma-separated values
+
+csv:    expression ("," expression)*
 
 // PEMDAS (Parentheses, Exponentiation, Multiplication, Division, Addition, Subtraction)
 
@@ -83,7 +90,9 @@ software_type:  "application"
 
 // Variables
 
-variable: "{" CNAME "}"
+global_id: CNAME
+
+variable_expression: "{" global_id "}"
 
 // Literals
 
