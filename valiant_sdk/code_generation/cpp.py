@@ -1,8 +1,8 @@
 from lark.lexer import Token
 
-from valiant_sdk.components import ASTNode, Comment, Expression, FunctionBody, FunctionCallExpression, MultiLineComment, PrintExpression, SingleLineComment, VariableExpression
+from valiant_sdk.components import ASTNode, AddExpression, AssignExpression, Comment, DeclareVariableExpression, DivideExpression, Expression, FunctionBody, FunctionCallExpression, MultiLineComment, MultiplyExpression, PrintExpression, SingleLineComment, SubtractExpression, VariableExpression
 from valiant_sdk.code_analysis import valiant_analyze
-from valiant_sdk.utils import load_text_file, throw_code_generator_feature_not_supported
+from valiant_sdk.utils import load_text_file, resolve_variable_name, throw_code_generator_feature_not_supported
 
 from .code_generator import ValiantCodeGenerator
 
@@ -42,39 +42,83 @@ class CPPCodeGenerator(ValiantCodeGenerator):
         return self.output.strip()
 
     def _generate_main_function(self, main_function_body: FunctionBody) -> str:
-        source_code = "int main(int argc, char *argv[])\n{\n"
-        for statement in main_function_body:
-            node_source_code = self._generate_statement(statement)
-            if type(node_source_code) is str and len(node_source_code) > 0:
-                source_code += "    " + node_source_code + "\n"
-        source_code += "}\n"
+        function_body_source_code = self._generate_function_body(main_function_body)
+        source_code = "int main(int argc, char *argv[])\n" + function_body_source_code + "\n"
         return source_code
 
-    def _generate_multi_line_comment(self, node: MultiLineComment) -> str:
-        return "/* " + node.value + " */";
+    def _generate_multi_line_comment(self, comment: MultiLineComment) -> str:
+        return "/* " + comment.value + " */";
 
-    def _generate_single_line_comment(self, node: SingleLineComment) -> str:
-        return "// " + node.value;
+    def _generate_single_line_comment(self, comment: SingleLineComment) -> str:
+        return "// " + comment.value;
 
-    def _generate_comment(self, node: Comment) -> str:
+    def _generate_assign_expression(self, expression: AssignExpression, function_body: FunctionBody) -> str:
+        variable_source_code = self._generate_variable_expression(expression.variable, function_body)
+        assignment_source_code = self._generate_expression(expression.assignment, function_body)
+        source_code = variable_source_code + " = " + assignment_source_code
+        return source_code
+
+    def _generate_add_expression(self, expression: AddExpression, function_body: FunctionBody) -> str:
+        left_expression_source_code = self._generate_expression(expression.left_expression, function_body)
+        right_expression_source_code = self._generate_expression(expression.right_expression, function_body)
+        source_code = left_expression_source_code + " + " + right_expression_source_code
+        return source_code
+
+    def _generate_subtract_expression(self, expression: SubtractExpression, function_body: FunctionBody) -> str:
+        left_expression_source_code = self._generate_expression(expression.left_expression, function_body)
+        right_expression_source_code = self._generate_expression(expression.right_expression, function_body)
+        source_code = left_expression_source_code + " - " + right_expression_source_code
+        return source_code
+
+    def _generate_multiply_expression(self, expression: MultiplyExpression, function_body: FunctionBody) -> str:
+        left_expression_source_code = self._generate_expression(expression.left_expression, function_body)
+        right_expression_source_code = self._generate_expression(expression.right_expression, function_body)
+        source_code = left_expression_source_code + " * " + right_expression_source_code
+        return source_code
+
+    def _generate_divide_expression(self, expression: DivideExpression, function_body: FunctionBody) -> str:
+        left_expression_source_code = self._generate_expression(expression.left_expression, function_body)
+        right_expression_source_code = self._generate_expression(expression.right_expression, function_body)
+        source_code = left_expression_source_code + " / " + right_expression_source_code
+        return source_code
+
+    def _generate_comment(self, comment: Comment) -> str:
         # Multi-line Comment
-        if isinstance(node, MultiLineComment) is True:
-            return self._generate_multi_line_comment(node)
+        if isinstance(comment, MultiLineComment) is True:
+            return self._generate_multi_line_comment(comment)
         # Single-line Comment
-        if isinstance(node, SingleLineComment) is True:
-            return self._generate_single_line_comment(node)
-        throw_code_generator_feature_not_supported("cpp", node)
+        if isinstance(comment, SingleLineComment) is True:
+            return self._generate_single_line_comment(comment)
+        throw_code_generator_feature_not_supported("cpp", comment)
 
-    def _generate_expression(self, node: Expression) -> str:
+    def _generate_expression(self, expression: Expression, function_body: FunctionBody) -> str:
+        # Token
+        if isinstance(expression, Token) is True:
+            return str(expression)
+        # Assign Expression
+        if isinstance(expression, AssignExpression) is True:
+            return self._generate_assign_expression(expression, function_body)
+        # Add Expression
+        if isinstance(expression, AddExpression) is True:
+            return self._generate_add_expression(expression, function_body)
+        # Subtract Expression
+        if isinstance(expression, SubtractExpression) is True:
+            return self._generate_subtract_expression(expression, function_body)
+        # Multiply Expression
+        if isinstance(expression, MultiplyExpression) is True:
+            return self._generate_multiply_expression(expression, function_body)
+        # Divide Expression
+        if isinstance(expression, DivideExpression) is True:
+            return self._generate_divide_expression(expression, function_body)
         # Function Call Expression
-        if isinstance(node, FunctionCallExpression) is True:
-            return self._generate_function_call_expression(node)
+        if isinstance(expression, FunctionCallExpression) is True:
+            return self._generate_function_call_expression(expression, function_body)
         # Print Expression
-        if isinstance(node, PrintExpression) is True:
-            return self._generate_print_expression(node)
-        throw_code_generator_feature_not_supported("cpp", node)
+        if isinstance(expression, PrintExpression) is True:
+            return self._generate_print_expression(expression, function_body)
+        throw_code_generator_feature_not_supported("cpp", expression)
 
-    def _generate_csv(self, expressions: list[Expression]) -> str:
+    def _generate_csv(self, expressions: list[Expression], function_body: FunctionBody) -> str:
         # Create an empty list of source code for each expression.
         expression_source_codes = []
         # Loop expressions:
@@ -86,7 +130,7 @@ class CPPCodeGenerator(ValiantCodeGenerator):
                 expression_source_code = str(expression)
             # If the expression is a variable:
             if isinstance(expression, VariableExpression):
-                expression_source_code = str(expression.global_id)
+                expression_source_code = self._generate_variable_expression(expression, function_body)
             # If the expression failed to generate source code:
             if expression_source_code is None:
                 # Throw an error.
@@ -98,24 +142,51 @@ class CPPCodeGenerator(ValiantCodeGenerator):
         # Return the source code.
         return source_code
 
-    def _generate_function_call_expression(self, node: FunctionCallExpression) -> str:
+    def _generate_function_body(self, function_body: FunctionBody) -> str:
+        # Start with a left curly brace.
+        source_code = "{\n"
+        # Loop the function body:
+        for statement in function_body:
+            # Generate source code for the statement.
+            statement_source_code = self._generate_statement(statement, function_body)
+            # If the statement generated source code:
+            if type(statement_source_code) is str and len(statement_source_code) > 0:
+                # Add the statement's source code to the function's body.
+                source_code += "    " + statement_source_code + "\n"
+        # End with a right curly brace.
+        source_code += "}"
+        # Return the source code.
+        return source_code
+
+    def _generate_function_call_expression(self, function_call_expression: FunctionCallExpression, function_body: FunctionBody) -> str:
         # Get the global ID of the function.
-        function_id = node.global_id
+        function_id = function_call_expression.name
         # Get the list of function call arguments.
-        args_source_code = self._generate_csv(node.args)
+        args_source_code = self._generate_csv(function_call_expression.args, function_body)
         # Generate the source code for the function call expression.
         source_code = function_id + "(" + args_source_code + ")"
         # Return the source code.
         return source_code
 
-    def _generate_statement(self, node: ASTNode) -> str:
+    def _generate_statement(self, expression: Expression, function_body: FunctionBody) -> str:
         # Comments
-        if isinstance(node, Comment) is True:
-            return self._generate_comment(node)
+        if isinstance(expression, Comment) is True:
+            return self._generate_comment(expression)
         # Expressions
-        if isinstance(node, Expression) is True:
-            return self._generate_expression(node) + ";"
-        throw_code_generator_feature_not_supported("cpp", node)
+        if isinstance(expression, Expression) is True:
+            return self._generate_expression(expression, function_body) + ";"
+        throw_code_generator_feature_not_supported("cpp", expression)
 
-    def _generate_print_expression(self, node: ASTNode) -> str:
-        return "valiant::print(" + str(node.message) + ")"
+    def _generate_print_expression(self, print_expression: PrintExpression, function_body: FunctionBody) -> str:
+        message_source_code = self._generate_expression(print_expression.message)
+        return "valiant::print(" + message_source_code + ")"
+
+    def _generate_variable_expression(self, variable: VariableExpression, function_body: FunctionBody) -> str:
+        # Resolve the variable name.
+        resolved_variable_name = resolve_variable_name(function_body.id, variable.name)
+        # If the variable expression is a variable declaration expression:
+        if isinstance(variable, DeclareVariableExpression):
+            # Return a local variable declaration.
+            return "auto " + resolved_variable_name
+        # Return the resolved variable name.
+        return resolved_variable_name

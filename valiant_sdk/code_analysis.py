@@ -1,10 +1,9 @@
-from ast import Expression
 from lark import Tree # type: ignore
 from lark.lexer import Token # type: ignore
 from valiant_sdk.parsing import valiant_parse
 from valiant_sdk.utils import abort, throw_code_analyzer_feature_not_supported, throw_token_not_supported
 
-from .components import ASTNode, Comment, EventHandler, FunctionBody, FunctionCallExpression, MultiLineComment, PrintExpression, SingleLineComment, TopLevelDefinition, VariableExpression
+from .components import AddExpression, AssignExpression, Comment, DeclareVariableExpression, DivideExpression, EventHandler, Expression, FunctionBody, FunctionCallExpression, MathExpression, MultiLineComment, MultiplyExpression, PrintExpression, SingleLineComment, SubtractExpression, TopLevelDefinition, VariableExpression
 
 
 class ValiantCodeAnalysisReport():
@@ -101,7 +100,35 @@ class ValiantCodeAnalysisReport():
             # Add the event handler to the body.
             self._add_event_handler_to_body(event_handler)
 
-    def _analyze_comment(self, node: object) -> Comment:
+    def _analyze_add_expression(self, node: Tree) -> AddExpression:
+        left_expression = self._analyze_expression(node.children[0])
+        right_expression = self._analyze_expression(node.children[1])
+        return AddExpression(left_expression, right_expression)
+
+    def _analyze_subtract_expression(self, node: Tree) -> SubtractExpression:
+        left_expression = self._analyze_expression(node.children[0])
+        right_expression = self._analyze_expression(node.children[1])
+        return SubtractExpression(left_expression, right_expression)
+
+    def _analyze_multiply_expression(self, node: Tree) -> MultiplyExpression:
+        left_expression = self._analyze_expression(node.children[0])
+        right_expression = self._analyze_expression(node.children[1])
+        return MultiplyExpression(left_expression, right_expression)
+
+    def _analyze_divide_expression(self, node: Tree) -> DivideExpression:
+        left_expression = self._analyze_expression(node.children[0])
+        right_expression = self._analyze_expression(node.children[1])
+        return DivideExpression(left_expression, right_expression)
+
+    def _analyze_assign_expression(self, node: Tree) -> AssignExpression:
+        # Get the variable expression.
+        variable_expression = self._analyze_variable_expression(node.children[0])
+        # Get the expression.
+        expression = self._analyze_expression(node.children[1])
+        # Return the expression.
+        return AssignExpression(variable_expression, expression)
+
+    def _analyze_comment(self, node: Tree) -> Comment:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
@@ -117,7 +144,7 @@ class ValiantCodeAnalysisReport():
         # Throw an error.
         throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
-    def _analyze_csv(self, node: object | None) -> list[Expression]:
+    def _analyze_csv(self, node: Tree | None) -> list[Expression]:
         # Create an empty CSV row.
         csv_row = []
         # If a CSV node is present:
@@ -133,19 +160,19 @@ class ValiantCodeAnalysisReport():
         # Return the CSV row.
         return csv_row
 
-    def _analyze_multi_line_comment(self, node: object) -> MultiLineComment:
+    def _analyze_multi_line_comment(self, node: Tree) -> MultiLineComment:
         # Unbox the node.
         comment = node.children[0]
         # Return the comment.
         return MultiLineComment(comment)
 
-    def _analyze_single_line_comment(self, node: object) -> SingleLineComment:
+    def _analyze_single_line_comment(self, node: Tree) -> SingleLineComment:
         # Unbox the node.
         comment = node.children[0]
         # Return the comment.
         return SingleLineComment(comment)
 
-    def _analyze_event_handler(self, node: object) -> EventHandler:
+    def _analyze_event_handler(self, node: Tree) -> EventHandler:
         # Analyze the event name.
         event_name_node = node.children[0]
         if event_name_node.data != "event_name":
@@ -164,7 +191,7 @@ class ValiantCodeAnalysisReport():
         # Return the event handler.
         return event_handler
 
-    def _analyze_event_name(self, node: object) -> str:
+    def _analyze_event_name(self, node: Tree) -> str:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
@@ -178,7 +205,7 @@ class ValiantCodeAnalysisReport():
         # Throw an error if an unsupported feature was used.
         throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
-    def _analyze_expression(self, node: object) -> Expression:
+    def _analyze_expression(self, node: Tree) -> Expression:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
@@ -191,6 +218,10 @@ class ValiantCodeAnalysisReport():
         if unboxed_node_type == "function_call_expression":
             # Analyze the unboxed node.
             return self._analyze_function_call_expression(unboxed_node)
+        # If the unboxed node is a math expression:
+        if unboxed_node_type == "math_expression":
+            # Analyze the unboxed node.
+            return self._analyze_math_expression(unboxed_node)
         # If the unboxed node is a print expression:
         if unboxed_node_type == "print_expression":
             # Analyze the unboxed node.
@@ -202,28 +233,52 @@ class ValiantCodeAnalysisReport():
         # Throw an error.
         throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
-    def _analyze_function_call_expression(self, node: object) -> FunctionCallExpression:
+    def _analyze_function_call_expression(self, node: Tree) -> FunctionCallExpression:
         # Unbox the node.
-        global_id_node = node.children[0]
+        name_node = node.children[0]
         csv_node = None
         if len(node.children) >= 2:
             csv_node = node.children[1]
         # Validate the function name node.
-        global_id = None
-        if global_id_node.data == "global_id":
-            global_id = global_id_node.children[0]
-        if global_id is None:
-            throw_code_analyzer_feature_not_supported(global_id_node.data)
+        name = None
+        if name_node.data == "variable_name":
+            name = self._analyze_variable_name(name_node)
+        if name is None:
+            throw_code_analyzer_feature_not_supported(name_node.data)
         # Analyze the function arguments node.
         csv_row = self._analyze_csv(csv_node)
         # Return the expression.
-        return FunctionCallExpression(global_id, csv_row)
+        return FunctionCallExpression(name, csv_row)
 
-    def _analyze_function_body(self, node: object) -> FunctionBody:
+    def _analyze_variable_name(self, node: Tree) -> str:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # Get the variable name.
+        variable_name = node.children[0].children[0]
+        # If the unboxed node is a variable expression:
+        if unboxed_node_type == "class_property_name":
+            # Analyze the unboxed node.
+            return "-" + variable_name
+        # If the unboxed node is a variable expression:
+        if unboxed_node_type == "local_variable_name":
+            # Analyze the unboxed node.
+            return variable_name
+        # If the unboxed node is a variable expression:
+        if unboxed_node_type == "unmangled_variable_name":
+            # Analyze the unboxed node.
+            return "@" + variable_name
+        # Throw an error.
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
+
+
+    def _analyze_function_body(self, node: Tree) -> FunctionBody:
         # Get a list of all statements in the function body.
         statement_nodes = node.children
-        # Create an empty list of statements.
-        statements = []
+        # Create empty lists to contain data and statistics obtained via analysis of the function body.
+        declared_local_variable_names: list[str] = []
+        statements: list[Expression] = []
         # For each statement node:
         for statement_node in statement_nodes:
             # Get the type of the statement node.
@@ -234,11 +289,48 @@ class ValiantCodeAnalysisReport():
                 throw_code_analyzer_feature_not_supported(statement_node_type)
             # Add the analyzed statement to the list.
             statement = self._analyze_statement(statement_node)
+            # Re-analyze the statement in the context of this function body.
+            statement = self._reanalyze_expression_in_function_body(statement, declared_local_variable_names)
+            # Add the statement to the list.
             statements.append(statement)
         # Return the function body.
         return FunctionBody(statements)
 
-    def _analyze_literal(self, node: object) -> object:
+    def _reanalyze_expression_in_function_body(self, expression: Expression, declared_local_variable_names: list[str]) -> Expression:
+        # Get the children nodes of the expression.
+        children = expression.children
+        # Start with the first node.
+        child_index = 0
+        # For each child node of the expression:
+        for child in children:
+            # If the child node is an expression:
+            if isinstance(child, Expression):
+                # Re-analyze the child expression.
+                child = self._reanalyze_expression_in_function_body(child, declared_local_variable_names)
+                # Update the child node.
+                children[child_index] = child
+                # Increment the index.
+                child_index += 1
+        # If the expression is a variable expression:
+        if isinstance(expression, VariableExpression):
+            expression = self._reanalyze_variable_expression_in_function_body(expression, declared_local_variable_names)
+        # Return the re-analyzed expression.
+        return expression
+
+
+    def _reanalyze_variable_expression_in_function_body(self, variable_expression: VariableExpression, declared_local_variable_names: list[str]) -> VariableExpression:
+        # Get the name of the variable.
+        variable_name = variable_expression.name
+        # If the variable has not been declared:
+        if variable_name not in declared_local_variable_names:
+            # Declare the variable.
+            variable_expression = DeclareVariableExpression(variable_name)
+            # Add the variable name to the list of declared local variables.
+            declared_local_variable_names.append(variable_name)
+        # Return the expression.
+        return variable_expression
+
+    def _analyze_literal(self, node: Tree) -> object:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Unbox the value.
@@ -246,7 +338,30 @@ class ValiantCodeAnalysisReport():
         # Return the unboxed value.
         return unboxed_value
 
-    def _analyze_print_expression(self, node: object) -> PrintExpression:
+    def _analyze_math_expression(self, node: Tree) -> MathExpression:
+        # Unbox the node.
+        unboxed_node = node.children[0]
+        # Get the unboxed node's type.
+        unboxed_node_type = unboxed_node.data
+        # If the unboxed node is an add expression:
+        if unboxed_node_type == "add_expression":
+            return self._analyze_add_expression(unboxed_node)
+        # If the unboxed node is a subtract expression:
+        if unboxed_node_type == "subtract_expression":
+            return self._analyze_subtract_expression(unboxed_node)
+        # If the unboxed node is a multiply expression:
+        if unboxed_node_type == "multiply_expression":
+            return self._analyze_multiply_expression(unboxed_node)
+        # If the unboxed node is a divide expression:
+        if unboxed_node_type == "divide_expression":
+            return self._analyze_divide_expression(unboxed_node)
+        # If the unboxed node is an assign expression:
+        if unboxed_node_type == "assign_expression":
+            return self._analyze_assign_expression(unboxed_node)
+        # Throw an error.
+        throw_code_analyzer_feature_not_supported(unboxed_node_type)
+
+    def _analyze_print_expression(self, node: Tree) -> PrintExpression:
         # Unbox the node.
         message_node = node.children[0]
         # Get the unboxed node's type.
@@ -260,11 +375,11 @@ class ValiantCodeAnalysisReport():
         # Return the expression.
         return PrintExpression(message)
 
-    def _analyze_string_literal(self, node: object) -> str:
+    def _analyze_string_literal(self, node: Tree) -> str:
         unboxed_value = node.children[0]
         return str(unboxed_value)
 
-    def _analyze_top_level_definition(self, node: object) -> TopLevelDefinition:
+    def _analyze_top_level_definition(self, node: Tree) -> TopLevelDefinition:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
@@ -280,7 +395,7 @@ class ValiantCodeAnalysisReport():
         # Throw an error.
         throw_code_analyzer_feature_not_supported(unboxed_node_type)
 
-    def _analyze_statement(self, node: object) -> Expression:
+    def _analyze_statement(self, node: Tree) -> Expression:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Get the unboxed node's type.
@@ -314,13 +429,27 @@ class ValiantCodeAnalysisReport():
         # Abort due to unsupported token type.
         throw_token_not_supported(token.type)
 
-    def _analyze_variable_expression(self, node: object) -> VariableExpression:
+    def _analyze_variable_expression(self, node: Tree) -> VariableExpression:
         # Unbox the node.
         unboxed_node = node.children[0]
         # Unbox the value.
-        unboxed_value = unboxed_node.children[0]
-        # Return the expression.
-        return VariableExpression(unboxed_value)
+        unboxed_value = unboxed_node.children[0].children[0]
+        # Get the box type.
+        box_type = unboxed_node.children[0].data
+        # If the node is a class property name:
+        if box_type == "class_property_name":
+            # Return the expression.
+            return VariableExpression("-" + unboxed_value)
+        # If the node is a local variable name:
+        if box_type == "local_variable_name":
+            # Return the expression.
+            return VariableExpression(unboxed_value)
+        # If the node is a unmangled variable name:
+        if box_type == "unmangled_variable_name":
+            # Return the expression.
+            return VariableExpression("@" + unboxed_value)
+        # Abort due to unsupported token type.
+        throw_token_not_supported(unboxed_value)
 
 
 

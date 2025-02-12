@@ -54,7 +54,7 @@ expression: print_expression
 |           variable_expression
 |           literal
 
-function_call_expression:   global_id "(" csv? ")"
+function_call_expression:   variable_name "(" csv? ")"
 
 // Comma-separated values
 
@@ -63,11 +63,15 @@ csv:    expression ("," expression)*
 // PEMDAS (Parentheses, Exponentiation, Multiplication, Division, Addition, Subtraction)
 
 math_expression:    "(" expression ")"
+|                   assign_expression
 |                   exponent_expression
 |                   multiply_expression
 |                   divide_expression
 |                   add_expression
 |                   subtract_expression
+
+assign_expression:  variable_expression "=" expression
+|                   "set" variable_expression "to" expression
 
 exponent_expression:    expression "^" expression
 
@@ -90,9 +94,15 @@ software_type:  "application"
 
 // Variables
 
-global_id: CNAME
+variable_name:  class_property_name | unmangled_variable_name | local_variable_name
 
-variable_expression: "{" global_id "}"
+class_property_name:    "-" CNAME
+
+local_variable_name:    CNAME
+
+unmangled_variable_name:    "@" CNAME
+
+variable_expression:    "{" variable_name "}"
 
 // Literals
 

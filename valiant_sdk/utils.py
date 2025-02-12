@@ -42,9 +42,33 @@ def abort(
         # Print a generic error message.
         print("[Error " + hex(code) + "] An unknown error occured. ")
     # DEBUG: To debug errors, uncomment the following line and re-run.
-    raise Exception()
+    # raise Exception()
     # Exit the program, returning the provided exit code.
     exit(code)
+
+
+def list_bool(values: list[object]) -> list[bool]:
+    converted_values = []
+    for value in values:
+        converted_value = bool(value)
+        converted_values.append(converted_value)
+    return converted_values
+
+
+def list_int(values: list[object]) -> list[int]:
+    converted_values = []
+    for value in values:
+        converted_value = int(value)
+        converted_values.append(converted_value)
+    return converted_values
+
+
+def list_float(values: list[object]) -> list[float]:
+    converted_values = []
+    for value in values:
+        converted_value = float(value)
+        converted_values.append(converted_value)
+    return converted_values
 
 
 def list_str(values: list[object]) -> list[str]:
@@ -53,6 +77,46 @@ def list_str(values: list[object]) -> list[str]:
         converted_value = str(value)
         converted_values.append(converted_value)
     return converted_values
+
+
+def resolve_variable_name(function_id: int, variable_name: str) -> str:
+    # If the variable name is a class property name:
+    if variable_name.startswith("-"):
+        # Return the resolved class property name.
+        return resolve_class_property_name(variable_name)
+    # If the variable name is an unmangled variable name:
+    if variable_name.startswith("@"):
+        # Return the resolved unmangled variable name.
+        return resolve_unmangled_variable_name(variable_name)
+    # Return the resolved local variable name.
+    return resolve_local_variable_name(function_id, variable_name)
+
+
+def resolve_class_property_name(variable_name: str) -> str:
+    return variable_name
+
+
+def hex2(value: int) -> str:
+    return hex(value)[3:]
+
+
+def _resolve_hex(value: object) -> str:
+    hash_code = value
+    if isinstance(hash_code, int):
+        hash_code = 11 * hash_code * 13 * hash_code * 27
+    hash_code = hash(hash_code)
+    return hex2(hash_code)[:6]
+
+
+def resolve_local_variable_name(function_id: int, variable_name: str) -> str:
+    function_id_hex = _resolve_hex(function_id)
+    variable_name_hex = _resolve_hex(variable_name)
+    resolved_variable_name = "_" + function_id_hex + "_" + variable_name_hex
+    return resolved_variable_name
+
+
+def resolve_unmangled_variable_name(variable_name: str) -> str:
+    return variable_name[1:]
 
 
 def throw_feature_not_supported(
@@ -154,7 +218,7 @@ def parse_program_arguments() -> object:
         "-f",
         "--format",
         type = str,
-        default = "cpp"
+        default = ""
     )
     argument_parser.add_argument(
         "-o",
@@ -167,10 +231,15 @@ def parse_program_arguments() -> object:
     # argument_parser.add_argument("-v", "--version")
     # Parse the program arguments.
     program_arguments = argument_parser.parse_args()
-    output_format = program_arguments.format
+    # Auto-detect the output format using the output file extension.
+    if program_arguments.format is None or len(program_arguments.format) < 1:
+        # Get the file extension of the output file path.
+        output_file_extension = program_arguments.output.split(".")[-1]
+        # Use the output file extension as the default output format.
+        program_arguments.format = output_file_extension
     program_arguments.output.replace(
         "{DEFAULT_OUTPUT}",
-        _get_default_output(output_format)
+        _get_default_output(program_arguments.format)
     )
     # Return the program's arguments.
     return program_arguments
