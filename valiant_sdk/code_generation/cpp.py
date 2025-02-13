@@ -1,4 +1,4 @@
-from lark.lexer import Token
+from lark.lexer import Token # type: ignore
 
 from valiant_sdk.components import ASTNode, AddExpression, AssignExpression, Comment, DeclareVariableExpression, DivideExpression, Expression, FunctionBody, FunctionCallExpression, MultiLineComment, MultiplyExpression, PrintExpression, SingleLineComment, SubtractExpression, VariableExpression
 from valiant_sdk.code_analysis import valiant_analyze

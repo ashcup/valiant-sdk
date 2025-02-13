@@ -1,6 +1,6 @@
 import os.path as path
 
-from lark import Lark
+from lark import Lark # type: ignore
 
 from ..parsing import ValiantParser
 
