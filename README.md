@@ -1,18 +1,9 @@
-# Valiant SDK
-
-Valiant is a high-level programming language designed to compile to multiple different targets, ranging from C++ desktop applications to webpage JavaScript.
-Valiant is designed to be easily read and written by beginners and is modelled closely after the English language.
+# Valiant Runtime Environment
 
 ## Dependencies
 
-### Python
-
-```sh
-pip3 install lark
-```
-
 ### Linux
-* `g++`
+* `gcc`
 
 ### Windows
 * [MS Build Tools](https://aka.ms/vs/17/release/vs_BuildTools.exe)
@@ -20,23 +11,25 @@ pip3 install lark
   * [AMD/Intel (64-bit)](https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/LLVM-20.1.0-rc1-win64.exe)
   * [AMD/Intel (32-bit)](https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/LLVM-20.1.0-rc1-win32.exe)
 
+## Building
+
+TODO: Write this section.
+
 ## Installation
 
 * Install the [dependencies](#dependencies).
+
+TODO: Write this section.
 
 ## Usage
 
 `type_this_exactly`, `{replace_these_variables}`, `[this_is_optional]`
 
 ```sh
-python valiant.py {input_files} -o {output_file} -f {output_format}
+valiant
 ```
 
-For example, to compile `hello_world.val` into `hello_world.exe`, you would type:
-
-```sh
-python valiant.py hello_world.val -o hello_world.cpp -f cpp
-```
+The official SDK for the Valiant programming language.
 
 ## [Examples](https://github.com/voidvoxel/valiant-sdk/tree/main/examples)
 
