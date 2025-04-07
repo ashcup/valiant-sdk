@@ -2,10 +2,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <direct.h>
+
 #include "raylib.h"
 #include "raylua.h"
 
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+
+const char* DIRECTORY_DELIMITER =
+#ifdef _WIN32
+                            "\\";
+#else
+                            "/";
+#endif
 
 void AbortWithCode(const char* message, int code)
 {
@@ -19,7 +28,7 @@ void Abort(const char* message)
 	AbortWithCode(message, 1);
 }
 
-static int Valiant_Core_Abort(LuaState* L)
+static int Valiant_Abort(LuaState* L)
 {
 	const char* message = LuaCheckString(L, 1);
 	int code = 1;
@@ -40,7 +49,7 @@ static int Valiant_Core_Abort(LuaState* L)
 	return 0;
 }
 
-static int Valiant_Core_Exit(LuaState* L)
+static int Valiant_Exit(LuaState* L)
 {
 	int code = 1;
 
@@ -60,7 +69,7 @@ static int Valiant_Core_Exit(LuaState* L)
 	return 0;
 }
 
-static int Valiant_Core_Log(LuaState* L)
+static int Valiant_Log(LuaState* L)
 {
 	int logLevel = LOG_INFO;
 
@@ -73,7 +82,7 @@ static int Valiant_Core_Log(LuaState* L)
 	return 0;
 }
 
-static int Valiant_Core_TraceLog(LuaState* L)
+static int Valiant_TraceLog(LuaState* L)
 {
 	int logLevel = 1;
 
@@ -96,37 +105,34 @@ static int Valiant_Core_TraceLog(LuaState* L)
 	return 0;
 }
 
+static const char* ASSETS_SRC_DIR = "." LUA_PATH_SEP "assets" LUA_PATH_SEP "src;" LUA_PATH_DEFAULT;
+
 int main()
 {
+	const char* cwd = _getcwd(NULL, 0);
+
 	LuaState* L = LuaInit();
 
 	LuaOpenLibs(L);
 
-	const char* modulePath = "assets/src/init.lua";
+	LuaSetGlobalInteger(L, "LOG_ALL", LOG_ALL);
+	LuaSetGlobalInteger(L, "LOG_DEBUG", LOG_DEBUG);
+	LuaSetGlobalInteger(L, "LOG_INFO", LOG_INFO);
+	LuaSetGlobalInteger(L, "LOG_ERROR", LOG_ERROR);
+	LuaSetGlobalInteger(L, "LOG_FATAL", LOG_FATAL);
+	LuaSetGlobalInteger(L, "LOG_TRACE", LOG_TRACE);
+	LuaSetGlobalInteger(L, "LOG_WARNING", LOG_WARNING);
 
-	if (!FileExists(modulePath))
-	{
-		Abort("`init.lua` not found.");
-	}
+	LuaSetGlobalString(L, "CWD", cwd);
+	LuaSetGlobalString(L, "DIRECTORY_DELIMITER", DIRECTORY_DELIMITER);
 
-	LuaSetGlobalFunction(L, "Abort", Valiant_Core_Abort);
-	LuaSetGlobalFunction(L, "Exit", Valiant_Core_Exit);
-	LuaSetGlobalFunction(L, "Log", Valiant_Core_Log);
-	LuaSetGlobalFunction(L, "TraceLog", Valiant_Core_TraceLog);
+	LuaSetGlobalFunction(L, "Valiant_Abort", Valiant_Abort);
+	LuaSetGlobalFunction(L, "Valiant_Exit", Valiant_Exit);
+	LuaSetGlobalFunction(L, "Valiant_Log", Valiant_Log);
+	LuaSetGlobalFunction(L, "Valiant_TraceLog", Valiant_TraceLog);
 
-	const char* sourceCode = LoadFileText(modulePath);
-
-	if (LuaLoadString(L, sourceCode) != LUA_OK)
-	{
-		Abort("Unsupported string encoding used for source code.");
-	}
-
-	if (LuaPCall(L, 0, 0, 0) != LUA_OK)
-	{
-		Abort("Invalid source code.");
-	}
-
-	LuaPop(L, LuaGetTop(L));
+	LuaLoadModule(L, "assets/src/valiant.lua");
+	LuaLoadModule(L, "assets/src/init.lua");
 
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -135,7 +141,8 @@ int main()
 	InitWindow(640, 480, "Hello Raylib");
 
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
-	SearchAndSetResourceDir("resources");
+	SearchAndSetResourceDir("assets");
+	LuaSetGlobalString(L, "LUA_PATH", ASSETS_SRC_DIR);
 
 	// Load a texture from the resources directory
 	Texture wabbit = LoadTexture("wabbit_alpha.png");
