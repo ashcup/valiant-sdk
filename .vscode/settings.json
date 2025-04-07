@@ -18,5 +18,8 @@
 		"xutility": "c",
 		"exception": "c",
 		"memory": "c"
-	}
+	},
+	"Lua.diagnostics.disable": [
+		"undefined-global"
+	]
 }
