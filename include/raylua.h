@@ -19,6 +19,13 @@ typedef lua_KFunction LuaKFunction;
 typedef lua_State LuaState;
 typedef lua_Writer LuaWriter;
 
+static const char* DIRECTORY_DELIMITER =
+#ifdef _WIN32
+"\\";
+#else
+"/";
+#endif
+
 #define LuaAbsIndex(L, idx)                     lua_absindex(L, idx)
 #define LuaArith(L, op)                         lua_arith(L, op)
 #define LuaAtPanic(L, panicf)                   lua_atpanic(L, panicf)
@@ -49,7 +56,7 @@ typedef lua_Writer LuaWriter;
 #define LuaGetInfo(L, what, ar)                 lua_getinfo(L, what, ar)
 #define LuaGetIUserValue(L, idx, n)             lua_getiuservalue(L, idx, n)
 #define LuaGetTop(L)                            lua_gettop(L)
-#define LuaInit()                               luaL_newstate()
+#define LuaInitPro()                            luaL_newstate()
 #define LuaIsInteger(L, n)                      lua_isinteger(L, n)
 #define LuaIsNumber(L, n)                       lua_isnumber(L, n)
 #define LuaIsString(L, n)                       lua_isstring(L, n)
@@ -57,11 +64,196 @@ typedef lua_Writer LuaWriter;
 #define LuaOpenLibs(L)                          luaL_openlibs(L)
 #define LuaPCall(L, n, r, f)                    lua_pcall(L, n, r, f)
 #define LuaPop(L, n)                            lua_pop(L, n)
+#define LuaPushBoolean(L, b)                    lua_pushboolean(L, b)
+#define LuaPushCFunction(L, f)                  lua_pushcfunction(L, f)
+#define LuaPushInteger(L, n)                    lua_pushinteger(L, n)
+#define LuaPushNumber(L, n)                     lua_pushnumber(L, n)
+#define LuaPushString(L, s)                     lua_pushstring(L, s)
 
-void LuaSetGlobalFunction(LuaState* L, const char* name, LuaCFunction f);
-void LuaSetGlobalInteger(LuaState* L, const char* name, int i);
+/// <summary>
+/// Abort the application with an error code.
+/// </summary>
+/// <param name="message">The error message to write.</param>
+/// <param name="code">The error code to return.</param>
+static void AbortWithCode(const char* message, int code);
 
-void LuaSetGlobalFunction(LuaState* L, const char* name, LuaCFunction f)
+/// <summary>
+/// Abort the application.
+/// </summary>
+/// <param name="message">The error message to write.</param>
+static void Abort(const char* message);
+
+/// <summary>
+/// Abort the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Abort(LuaState* L);
+
+/// <summary>
+/// Draw the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Draw(LuaState* L);
+
+/// <summary>
+/// Exit the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Exit(LuaState* L);
+
+/// <summary>
+/// Start the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Start(LuaState* L);
+
+/// <summary>
+/// Stop the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Stop(LuaState* L);
+
+/// <summary>
+/// Tick the application.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_application_Tick(LuaState* L);
+
+/// <summary>
+/// Write a message to the trace log.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_console_Log(LuaState* L);
+
+/// <summary>
+/// Write a message to the trace log.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_console_TraceLog(LuaState* L);
+
+/// <summary>
+/// Close the window.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_window_Close(LuaState* L);
+
+/// <summary>
+/// Open the window.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_window_Open(LuaState* L);
+
+/// <summary>
+/// Return `true` if the window should close; `false` otherwise.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The number of returned values.</returns>
+static int valiant_window_ShouldClose(LuaState* L);
+
+/// <summary>
+/// Initialize a new raylua state.
+/// </summary>
+/// <returns>A new raylua state.</returns>
+LuaState* LuaInit();
+
+/// <summary>
+/// Initialize a new Lua state with raylua globals (for use with `LuaInitPro()`).
+/// </summary>
+/// <param name="L">The Lua state.</param>
+void LuaInitGlobals(LuaState* L);
+
+/// <summary>
+/// Load a Lua module.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="modulePath"></param>
+/// <returns></returns>
+int LuaLoadModule(LuaState* L, const char* modulePath);
+
+/// <summary>
+/// Set a global variable.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="name">The name of the global variable.</param>
+/// <param name="f">The new value of the global variable.</param>
+void LuaSetGlobalCFunction(LuaState* L, const char* name, LuaCFunction f);
+
+/// <summary>
+/// Set a global variable.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="name">The name of the global variable.</param>
+/// <param name="n">The new value of the global variable.</param>
+void LuaSetGlobalInteger(LuaState* L, const char* name, int n);
+
+/// <summary>
+/// Set a global variable.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="name">The name of the global variable.</param>
+/// <param name="n">The new value of the global variable.</param>
+void LuaSetGlobalNumber(LuaState* L, const char* name, double n);
+
+/// <summary>
+/// Set a global variable.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="name">The name of the global variable.</param>
+/// <param name="s">The new value of the global variable.</param>
+void LuaSetGlobalString(LuaState* L, const char* name, const char* s);
+
+LuaState* LuaInit()
+{
+	LuaState* L = LuaInitPro();
+
+	LuaOpenLibs(L);
+
+	LuaInitGlobals(L);
+
+	return L;
+}
+
+void LuaInitGlobals(LuaState* L)
+{
+	const char* cwd = _getcwd(NULL, 0);
+
+	LuaSetGlobalInteger(L, "FLAG_VSYNC_HINT", FLAG_VSYNC_HINT);
+	LuaSetGlobalInteger(L, "FLAG_WINDOW_HIGHDPI", FLAG_WINDOW_HIGHDPI);
+	LuaSetGlobalInteger(L, "LOG_ALL", LOG_ALL);
+	LuaSetGlobalInteger(L, "LOG_DEBUG", LOG_DEBUG);
+	LuaSetGlobalInteger(L, "LOG_INFO", LOG_INFO);
+	LuaSetGlobalInteger(L, "LOG_ERROR", LOG_ERROR);
+	LuaSetGlobalInteger(L, "LOG_FATAL", LOG_FATAL);
+	LuaSetGlobalInteger(L, "LOG_TRACE", LOG_TRACE);
+	LuaSetGlobalInteger(L, "LOG_WARNING", LOG_WARNING);
+
+	LuaSetGlobalString(L, "CWD", cwd);
+	LuaSetGlobalString(L, "DIRECTORY_DELIMITER", DIRECTORY_DELIMITER);
+
+	LuaSetGlobalCFunction(L, "valiant_application_Abort", valiant_application_Abort);
+	LuaSetGlobalCFunction(L, "valiant_application_Draw", valiant_application_Draw);
+	LuaSetGlobalCFunction(L, "valiant_application_Exit", valiant_application_Exit);
+	LuaSetGlobalCFunction(L, "valiant_application_Start", valiant_application_Start);
+	LuaSetGlobalCFunction(L, "valiant_application_Stop", valiant_application_Stop);
+	LuaSetGlobalCFunction(L, "valiant_application_Tick", valiant_application_Tick);
+	LuaSetGlobalCFunction(L, "valiant_console_Log", valiant_console_Log);
+	LuaSetGlobalCFunction(L, "valiant_console_TraceLog", valiant_console_TraceLog);
+	LuaSetGlobalCFunction(L, "valiant_window_Close", valiant_window_Close);
+	LuaSetGlobalCFunction(L, "valiant_window_Open", valiant_window_Open);
+	LuaSetGlobalCFunction(L, "valiant_window_ShouldClose", valiant_window_ShouldClose);
+}
+
+void LuaSetGlobalCFunction(LuaState* L, const char* name, LuaCFunction f)
 {
     // Push the pointer to function
     lua_pushcfunction(L, f);
@@ -71,10 +263,20 @@ void LuaSetGlobalFunction(LuaState* L, const char* name, LuaCFunction f)
     lua_setglobal(L, name);
 }
 
-void LuaSetGlobalInteger(LuaState* L, const char* name, int i)
+void LuaSetGlobalInteger(LuaState* L, const char* name, int n)
 {
     // Push the integer
-    lua_pushinteger(L, i);
+    lua_pushinteger(L, n);
+
+    // Get the value on top of the stack
+    // and set as a global, in this case is the function
+    lua_setglobal(L, name);
+}
+
+void LuaSetGlobalNumber(LuaState* L, const char* name, double n)
+{
+    // Push the number
+    lua_pushnumber(L, n);
 
     // Get the value on top of the stack
     // and set as a global, in this case is the function
@@ -100,7 +302,17 @@ int LuaLoadModule(LuaState* L, const char* modulePath)
 		TraceLog(LOG_ERROR, "`init.lua` not found.");
 	}
 
-    const char* sourceCode = LoadFileText(modulePath);
+	const char* sourceCodeBody = LoadFileText(modulePath);
+
+	const char* sourceCodeParts[3] = {
+		"(function ()",
+		sourceCodeBody,
+		"end)()"
+	};
+
+	const char* sourceCode = TextJoin(sourceCodeParts, 3, "\n");
+
+	UnloadFileText(sourceCodeBody);
 
 	if (errorCode = LuaLoadString(L, sourceCode) != LUA_OK)
 	{
@@ -120,9 +332,9 @@ int LuaLoadModule(LuaState* L, const char* modulePath)
         LuaPop(L, LuaGetTop(L));
     }
 
-    UnloadFileText(sourceCode);
+	LuaPushInteger(L, errorCode);
 
-    return errorCode;
+	return 1;
 }
 
 #endif // RAYLUA_H
