@@ -1067,7 +1067,7 @@ static int panic (lua_State *L) {
                   : "error object is not a string";
   lua_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
                         msg);
-  return 0;  /* return to Lua to valiant_Abort */
+  return 0;  /* return to Lua to valiant_abort */
 }
 
 

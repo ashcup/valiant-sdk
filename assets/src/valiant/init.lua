@@ -3,5 +3,6 @@
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 return {
-    core = require "valiant.core"
+    core = require "valiant.core",
+    ui = require "valiant.ui"
 }

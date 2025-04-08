@@ -86,7 +86,7 @@ static int tpanic (lua_State *L) {
 ** Warning function for tests. First, it concatenates all parts of
 ** a warning in buffer 'buff'. Then, it has three modes:
 ** - 0.normal: messages starting with '#' are shown on standard output;
-** - other messages valiant_Abort the tests (they represent real warning
+** - other messages valiant_abort the tests (they represent real warning
 ** conditions; the standard tests should not generate these conditions
 ** unexpectedly);
 ** - 1.allow: all messages are shown;
@@ -1881,8 +1881,8 @@ static int runC (lua_State *L, lua_State *L1, const char *pc) {
     else if EQ("error") {
       lua_error(L1);
     }
-    else if EQ("valiant_Abort") {
-      valiant_Abort();
+    else if EQ("valiant_abort") {
+      valiant_abort();
     }
     else if EQ("throw") {
 #if defined(__cplusplus)

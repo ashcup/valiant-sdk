@@ -41,13 +41,50 @@ void LuaSetGlobalString(LuaState* L, const char* name, const char* s)
     lua_setglobal(L, name);
 }
 
-int LuaLoadModule(LuaState* L, const char* modulePath)
+int LuaRunString(LuaState* L, const char* sourceCode)
+{
+    int errorCode = LUA_OK;
+
+    if (errorCode = LuaLoadString(L, sourceCode) != LUA_OK)
+	{
+        TraceLog(LOG_ERROR, "Invalid source code.");
+	}
+
+	if (
+        (errorCode == LUA_OK) &&
+        (errorCode = LuaPCall(L, 0, 0, 0) != LUA_OK)
+    )
+	{
+        const char* errorMessage = "An unknown error occured.";
+        int errorMessageLoc = 1;
+
+        if (LuaIsString(L, errorMessageLoc))
+        {
+            errorMessage = LuaCheckString(L, errorMessageLoc);
+        }
+
+		TraceLog(LOG_ERROR, errorMessage);
+	}
+
+	if (errorCode == LUA_OK)
+    {
+        LuaPop(L, LuaGetTop(L));
+
+        return true;
+    }
+
+	return errorCode;
+}
+
+int LuaRequire(LuaState* L, const char* modulePath)
 {
     int errorCode = LUA_OK;
 
 	if (!FileExists(modulePath))
 	{
 		TraceLog(LOG_ERROR, "`init.lua` not found.");
+
+        return LUA_ERRFILE;
 	}
 
 	const char* sourceCodeBody = LoadFileText(modulePath);
@@ -62,25 +99,5 @@ int LuaLoadModule(LuaState* L, const char* modulePath)
 
 	UnloadFileText(sourceCodeBody);
 
-	if (errorCode = LuaLoadString(L, sourceCode) != LUA_OK)
-	{
-        TraceLog(LOG_ERROR, "Unsupported string encoding used for source code.");
-	}
-
-	if (
-        (errorCode == LUA_OK) &&
-        (errorCode = LuaPCall(L, 0, 0, 0) != LUA_OK)
-    )
-	{
-		TraceLog(LOG_ERROR, "Invalid source code.");
-	}
-
-	if (errorCode == LUA_OK)
-    {
-        LuaPop(L, LuaGetTop(L));
-    }
-
-	LuaPushInteger(L, errorCode);
-
-	return 1;
+	return LuaRunString(L, sourceCode);
 }

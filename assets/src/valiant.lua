@@ -10,3 +10,16 @@ end
 local pathBase = CWD .. DIRECTORY_DELIMITER .. "assets" .. DIRECTORY_DELIMITER .. "src" .. DIRECTORY_DELIMITER;
 
 LuaAppendPath(pathBase)
+
+---@diagnostic disable-next-line: lowercase-global
+class = require "valiant.core.class"
+
+---@diagnostic disable-next-line: lowercase-global
+function set_mode(name)
+    if name == "advanced" then
+        _G.Console = nil
+    end
+    if name == "simple" then
+        Console = require "valiant.core.console"
+    end
+end

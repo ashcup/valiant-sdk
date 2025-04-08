@@ -71,12 +71,20 @@ static const char* DIRECTORY_DELIMITER =
 #define LuaPushString(L, s)                     lua_pushstring(L, s)
 
 /// <summary>
-/// Load a Lua module.
+/// Run Lua source code.
 /// </summary>
 /// <param name="L">The Lua state.</param>
-/// <param name="modulePath"></param>
+/// <param name="sourceCode">The Lua source code to run.</param>
 /// <returns></returns>
-int LuaLoadModule(LuaState* L, const char* modulePath);
+int LuaRunString(LuaState* L, const char* sourceCode);
+
+/// <summary>
+/// Require a Lua module.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <param name="modulePath">The path to the Lua module to require.</param>
+/// <returns></returns>
+int LuaRequire(LuaState* L, const char* modulePath);
 
 /// <summary>
 /// Set a global variable.

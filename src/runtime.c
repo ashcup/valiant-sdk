@@ -18,8 +18,8 @@ LuaState* InitValiant(void)
 
 	InitValiantStandardLibrary(L);
 
-	LuaLoadModule(L, "assets/src/valiant.lua");
-	LuaLoadModule(L, "assets/src/init.lua");
+	LuaRequire(L, "assets/src/valiant.lua");
+	LuaRequire(L, "assets/src/init.lua");
 
 	return L;
 }

@@ -4,6 +4,8 @@
 
 return {
     application = require "valiant.core.application",
+    class = require "valiant.core.class",
     console = require "valiant.core.console",
-    window = require "valiant.core.window"
+    events = require "valiant.core.events",
+    tableutils = require "valiant.core.tableutils"
 }
