@@ -6,4 +6,4 @@ local Console = require "valiant.core.console"
 
 local console = Console.create()
 
-console:log "wow"
+console:log "Hello, world!"
