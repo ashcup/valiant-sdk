@@ -21,7 +21,8 @@
 		"valiant.h": "c",
 		"runtime.h": "c",
 		"core.h": "c",
-		"stdlib.h": "c"
+		"stdlib.h": "c",
+		"vstdlib.h": "c"
 	},
 	"Lua.diagnostics.disable": [
 		"undefined-global"

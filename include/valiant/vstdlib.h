@@ -1,6 +1,12 @@
 #include "raylua.h"
 
 /// <summary>
+/// Initialize a new Lua state with Valiant's pre-defined global variables (for use with `LuaInit()`).
+/// </summary>
+/// <param name="L">The Lua state.</param>
+void InitValiantStandardLibrary(LuaState* L);
+
+/// <summary>
 /// valiant_Abort the application with an error code.
 /// </summary>
 /// <param name="message">The error message to write.</param>
