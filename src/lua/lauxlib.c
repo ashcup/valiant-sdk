@@ -1067,7 +1067,7 @@ static int panic (lua_State *L) {
                   : "error object is not a string";
   lua_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
                         msg);
-  return 0;  /* return to Lua to abort */
+  return 0;  /* return to Lua to valiant_Abort */
 }
 
 
@@ -1195,4 +1195,3 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
     luaL_error(L, "version mismatch: app. needs %f, Lua core provides %f",
                   (LUAI_UACNUMBER)ver, (LUAI_UACNUMBER)v);
 }
-
