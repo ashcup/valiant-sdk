@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "raylib.h"
 #include "raylua.h"
+#include "resource_dir.h"
 #include "valiant/vstdlib.h"
 
 static void _InitConstants(LuaState* L);
@@ -79,6 +80,7 @@ static void _InitFunctions(LuaState* L)
 	LuaSetGlobalCFunction(L, "vstdlib_application_abort", vstdlib_application_abort);
 	LuaSetGlobalCFunction(L, "vstdlib_window_draw", vstdlib_window_draw);
 	LuaSetGlobalCFunction(L, "vstdlib_application_exit", vstdlib_application_exit);
+	LuaSetGlobalCFunction(L, "vstdlib_assets_setDirectory", vstdlib_assets_setDirectory);
 	LuaSetGlobalCFunction(L, "vstdlib_window_setTargetFPS", vstdlib_window_setTargetFPS);
 	LuaSetGlobalCFunction(L, "vstdlib_application_start", vstdlib_application_start);
 	LuaSetGlobalCFunction(L, "vstdlib_application_stop", vstdlib_application_stop);
@@ -185,6 +187,13 @@ int vstdlib_application_stop(LuaState* L)
 	vstdlib_window_close(L);
 
 	return 0;
+}
+
+int vstdlib_assets_setDirectory(LuaState* L)
+{
+	const char* directoryPath = LuaCheckString(L, 1);
+
+	SearchAndSetResourceDir(directoryPath);
 }
 
 int vstdlib_window_tick(LuaState* L)

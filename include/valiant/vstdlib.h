@@ -62,6 +62,13 @@ int vstdlib_application_start(LuaState* L);
 int vstdlib_application_stop(LuaState* L);
 
 /// <summary>
+/// Set the assets directory.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_assets_setDirectory(LuaState* L);
+
+/// <summary>
 /// Tick the application.
 /// </summary>
 /// <param name="L">The Lua state.</param>
