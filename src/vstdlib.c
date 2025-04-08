@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #include <direct.h>
 #include <math.h>
 #include <stdlib.h>
@@ -220,6 +224,20 @@ int vstdlib_console_traceLog(LuaState* L)
 	}
 
 	TraceLog(logLevel, message);
+
+	return 0;
+}
+
+int vstdlib_ui_beginDrawing(LuaState* L)
+{
+	BeginDrawing();
+
+	return 0;
+}
+
+int vstdlib_ui_endDrawing(LuaState* L)
+{
+	EndDrawing();
 
 	return 0;
 }
