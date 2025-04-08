@@ -83,6 +83,20 @@ int vstdlib_console_log(LuaState* L);
 int vstdlib_console_traceLog(LuaState* L);
 
 /// <summary>
+/// Begin drawing.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_ui_beginDrawing(LuaState* L);
+
+/// <summary>
+/// End drawing.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_ui_endDrawing(LuaState* L);
+
+/// <summary>
 /// Close the window.
 /// </summary>
 /// <param name="L">The Lua state.</param>
