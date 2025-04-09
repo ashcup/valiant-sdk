@@ -1,10 +1,36 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#if !defined(VALIANT__VSTDLIB_H)
+#define VALIANT__VSTDLIB_H
+
+#include "raylib.h"
 #include "raylua.h"
+
+bool Valiant_isInitialized;
+
+/// <summary>
+/// Get the Valiant icon as an image.
+/// </summary>
+/// <returns>The Valiant icon as an image.</returns>
+Image Valiant_GetIconImage(void);
 
 /// <summary>
 /// Initialize a new Lua state with Valiant's pre-defined global variables (for use with `LuaInit()`).
 /// </summary>
 /// <param name="L">The Lua state.</param>
-void InitValiantStandardLibrary(LuaState* L);
+void Valiant_InitStandardLibrary(LuaState* L);
+
+/// <summary>
+/// Load all static assets.
+/// </summary>
+void Valiant_LoadStatic(void);
+
+/// <summary>
+/// Unload all static assets.
+/// </summary>
+void Valiant_UnloadStatic(void);
 
 /// <summary>
 /// Abort the application with an error code.
@@ -123,3 +149,5 @@ int vstdlib_window_open(LuaState* L);
 /// <param name="L">The Lua state.</param>
 /// <returns>The return count.</returns>
 int vstdlib_window_shouldClose(LuaState* L);
+
+#endif // VALIANT__VSTDLIB_H

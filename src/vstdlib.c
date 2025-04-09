@@ -16,8 +16,14 @@ static void _InitConstants_Integers_LogFlags(LuaState* L);
 static void _InitConstants_Integers_WindowFlags(LuaState* L);
 static void _InitConstants_Strings(LuaState* L);
 static void _InitFunctions(LuaState* L);
+static void _UpdateConstants(LuaState* L);
+static void _UpdateConstants_Cwd(LuaState* L);
 
-void InitValiantStandardLibrary(LuaState* L)
+static Image Valiant_iconImage;
+
+bool Valiant_isInitialized = false;
+
+void Valiant_InitStandardLibrary(LuaState* L)
 {
 	_InitConstants(L);
 	_InitFunctions(L);
@@ -27,6 +33,8 @@ static void _InitConstants(LuaState* L)
 {
 	_InitConstants_Integers(L);
 	_InitConstants_Strings(L);
+
+	_UpdateConstants(L);
 }
 
 static void _InitConstants_Integers(LuaState* L)
@@ -69,10 +77,19 @@ static void _InitConstants_Integers_WindowFlags(LuaState* L)
 
 static void _InitConstants_Strings(LuaState* L)
 {
+	LuaSetGlobalString(L, "DIRECTORY_DELIMITER", DIRECTORY_DELIMITER);
+}
+
+static void _UpdateConstants(LuaState* L)
+{
+	_UpdateConstants_Cwd(L);
+}
+
+static void _UpdateConstants_Cwd(LuaState* L)
+{
 	const char* cwd = _getcwd(NULL, 0);
 
 	LuaSetGlobalString(L, "CWD", cwd);
-	LuaSetGlobalString(L, "DIRECTORY_DELIMITER", DIRECTORY_DELIMITER);
 }
 
 static void _InitFunctions(LuaState* L)
@@ -272,6 +289,9 @@ int vstdlib_window_open(LuaState* L)
 
 	InitWindow(640, 480, "Valiant");
 
+	Image valiantIconImage = Valiant_GetIconImage();
+	SetWindowIcon(valiantIconImage);
+
 	return 0;
 }
 
@@ -298,4 +318,21 @@ int vstdlib_window_shouldClose(LuaState* L)
 	lua_pushboolean(L, WindowShouldClose());
 
 	return 1;
+}
+
+void Valiant_LoadStatic(void)
+{
+	// Load the Valiant icon as an image.
+	Valiant_iconImage = LoadImage("assets/img/valiant.png");
+}
+
+void Valiant_UnloadStatic(void)
+{
+	// Unload the Valiant icon as an image.
+	UnloadImage(Valiant_iconImage);
+}
+
+Image Valiant_GetIconImage(void)
+{
+	return Valiant_iconImage;
 }

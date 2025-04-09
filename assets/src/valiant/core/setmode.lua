@@ -6,12 +6,12 @@ function setmode(name)
         _G.Console = nil
         _G.console = nil
     elseif name == "simple" then
-        Application = require "valiant.core.Application"
-        Console = require "valiant.core.Console"
+        _G.Application = require "valiant.core.Application"
+        _G.Console = require "valiant.core.Console"
         ---@diagnostic disable-next-line: lowercase-global
-        application = Application.create()
+        _G.application = Application.create()
         ---@diagnostic disable-next-line: lowercase-global
-        console = application.console
+        _G.console = application.console
     end
 end
 

@@ -11,6 +11,6 @@
 /// Initialize a new Valiant state.
 /// </summary>
 /// <returns>A new Valiant state.</returns>
-LuaState* InitValiant(void);
+LuaState* Valiant_Init(void);
 
 #endif // VALIANT__RUNTIME_H

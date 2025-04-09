@@ -10,13 +10,18 @@
 #include "valiant/runtime.h"
 #include "valiant/vstdlib.h"
 
-LuaState* InitValiant(void)
+LuaState* Valiant_Init(void)
 {
+	if (!Valiant_isInitialized)
+	{
+		Valiant_LoadStatic();
+	}
+
 	LuaState* L = LuaInit();
 
 	LuaOpenLibs(L);
 
-	InitValiantStandardLibrary(L);
+	Valiant_InitStandardLibrary(L);
 
 	LuaRequire(L, "assets/src/valiant.lua");
 	LuaRequire(L, "assets/src/init.lua");

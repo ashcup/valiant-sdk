@@ -11,7 +11,7 @@
 
 int main()
 {
-	LuaState* L = InitValiant();
+	LuaState* L = Valiant_Init();
 
 	// // Tell the window to use vsync and work on high DPI displays
 	// SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
