@@ -289,8 +289,7 @@ int vstdlib_window_open(LuaState* L)
 
 	InitWindow(640, 480, "Valiant");
 
-	Image valiantIconImage = Valiant_GetIconImage();
-	SetWindowIcon(valiantIconImage);
+	SetWindowIcon(Valiant_GetIconImage());
 
 	return 0;
 }
