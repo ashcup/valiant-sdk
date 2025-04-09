@@ -3,9 +3,9 @@
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 return {
-    application = require "valiant.core.application",
+    application = require "valiant.core.Application",
     class = require "valiant.core.class",
-    console = require "valiant.core.console",
+    console = require "valiant.core.Console",
     events = require "valiant.core.events",
     tableutils = require "valiant.core.tableutils"
 }
