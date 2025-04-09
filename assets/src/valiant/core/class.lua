@@ -2,12 +2,21 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+local tableutils = require "valiant.core.tableutils"
+
 ---comment
 ---@param fields table A table of fields to initialize the instance.
 ---@return table instance The new class.
 local function class(fields)
     if type(fields) ~= "table" then fields = {} end
+    if type(fields.__extends) ~= "table" then fields.__extends = {} end
+    local extends = fields.__extends
+    fields.__extends = nil
+    ---@class NewClass The new class being defined.
     local NewClass = {}
+    for _, ParentClass in pairs(extends) do
+        tableutils.merge(NewClass, ParentClass)
+    end
     NewClass.__index = NewClass
     ---Initialize this instance.
     function NewClass:__init(...) end

@@ -15,4 +15,6 @@ LuaAppendPath(pathBase)
 class = require "valiant.core.class"
 
 ---@diagnostic disable-next-line: lowercase-global
-set_mode = require "valiant.core.set_mode"
+setmode = require "valiant.core.setmode"
+
+setmode "simple"

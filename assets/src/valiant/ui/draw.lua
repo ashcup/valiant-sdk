@@ -14,9 +14,9 @@ local draw = {
     d3d = d3d
 }
 
-draw = tableutils.merge(draw, common)
-draw = tableutils.merge(draw, d2d)
-draw = tableutils.merge(draw, d3d)
-draw = tableutils.merge(draw, window)
+tableutils.merge(draw, common)
+tableutils.merge(draw, d2d)
+tableutils.merge(draw, d3d)
+tableutils.merge(draw, window)
 
 return draw

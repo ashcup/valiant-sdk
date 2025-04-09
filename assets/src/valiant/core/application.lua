@@ -2,15 +2,11 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-local Application = {}
+local Console = require "valiant.core.Console"
 
----Create a new application.
----@return table
-function Application.create()
-    local properties = {}
-    local instance = setmetatable(properties, Application)
-    return instance
-end
+local Application = class {
+    __extends = { Console }
+}
 
 ---Abort the application.
 ---@param message string The error message to log.

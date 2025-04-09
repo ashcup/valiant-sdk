@@ -1,7 +1,7 @@
 ---Set the language-complexity mode of the Valiant runtime.
 ---@param name ("advanced"|"simple") The name of the mode.
 ---@diagnostic disable-next-line: lowercase-global
-function set_mode(name)
+function setmode(name)
     if name == "advanced" then
         _G.Console = nil
         _G.console = nil
@@ -12,4 +12,4 @@ function set_mode(name)
     end
 end
 
-return set_mode
+return setmode
