@@ -105,6 +105,8 @@ static void _InitFunctions(LuaState* L)
 	LuaSetGlobalCFunction(L, "vstdlib_console_log", vstdlib_console_log);
 	LuaSetGlobalCFunction(L, "vstdlib_console_traceLog", vstdlib_console_traceLog);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_beginDrawing", vstdlib_ui_beginDrawing);
+	LuaSetGlobalCFunction(L, "vstdlib_ui_drawBackgroundColor", vstdlib_ui_drawBackgroundColor);
+	LuaSetGlobalCFunction(L, "vstdlib_ui_drawText", vstdlib_ui_drawText);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_endDrawing", vstdlib_ui_endDrawing);
 	LuaSetGlobalCFunction(L, "vstdlib_window_close", vstdlib_window_close);
 	LuaSetGlobalCFunction(L, "vstdlib_window_open", vstdlib_window_open);
@@ -257,6 +259,35 @@ int vstdlib_console_traceLog(LuaState* L)
 int vstdlib_ui_beginDrawing(LuaState* L)
 {
 	BeginDrawing();
+
+	return 0;
+}
+
+int vstdlib_ui_drawBackgroundColor(LuaState* L)
+{
+	int colorLoc = 1;
+	Color* color = LuaToUserdata(L, colorLoc);
+
+	ClearBackground(*color);
+
+	return 0;
+}
+
+int vstdlib_ui_drawText(LuaState* L)
+{
+	int textLoc = 1;
+	int xLoc = 2;
+	int yLoc = 3;
+	int fontSizeLoc = 4;
+	int colorLoc = 5;
+
+	const char* text = LuaCheckString(L, textLoc);
+	int x = LuaCheckInteger(L, textLoc);
+	int y = LuaCheckInteger(L, textLoc);
+	int fontSize = LuaCheckInteger(L, textLoc);
+	Color* color = LuaToUserdata(L, colorLoc);
+
+	DrawText(text, x, y, fontSize, *color);
 
 	return 0;
 }

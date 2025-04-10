@@ -7,7 +7,7 @@ local tableutils = require "valiant.core.tableutils"
 local ui = {}
 
 tableutils.merge(ui, require "valiant.ui.common")
-tableutils.merge(ui, require "valiant.ui.window")
+tableutils.merge(ui, require "valiant.ui.Window")
 tableutils.merge(ui, require "valiant.ui.d2d")
 tableutils.merge(ui, require "valiant.ui.d3d")
 

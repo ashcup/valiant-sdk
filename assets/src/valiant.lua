@@ -15,6 +15,9 @@ LuaAppendPath(pathBase)
 class = require "valiant.core.class"
 
 ---@diagnostic disable-next-line: lowercase-global
-setmode = require "valiant.core.setmode"
+require "valiant.core.mode"
+
+-- Enable simple mode.
+-- NOTE: Some runtime environment initialization may be placed beneath here to reduce time spent developing and debugging the runtime environment initialization. However, no globalvars should ever be defined beneath here.
 
 setmode "simple"

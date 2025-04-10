@@ -35,6 +35,7 @@ static const char* DIRECTORY_DELIMITER =
 #define LuaCheckInteger(L, n)                   (int)luaL_checkinteger(L, n)
 #define LuaCheckNumber(L, n)                    (double)luaL_checknumber(L, n)
 #define LuaCheckString(L, n)                    luaL_checkstring(L, n)
+#define LuaToUserdata(L, n)                     lua_touserdata(L, n)
 #define LuaClose(L)                             lua_close(L)
 #define LuaCloseSlot(L, idx)                    lua_closeslot(L, idx)
 #define LuaCloseThread(L, from)                 lua_closethread(L, from)

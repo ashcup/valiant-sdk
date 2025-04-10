@@ -2,21 +2,16 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-local raylib = require "raylib"
-local events = require "valiant.core.events"
+-- local raylib = require "raylib"
+-- local events = require "valiant.core.events"
 
-local Window = {}
+local Window = class {
+    width = 640,
+    height = 480,
+    title = "Valiant"
+}
 
-function Window.create()
-    local properties = {
-        width = 640,
-        height = 480,
-        title = "Valiant"
-    }
-    local instance = setmetatable(properties, Window)
-    vstdlib_window_open(instance.width, instance.height, instance.title)
-    return instance
-end
+function Window:__init() end
 
 function Window:__gc()
     self:close()
@@ -29,10 +24,11 @@ end
 
 ---Draw the application.
 function Window:draw()
-    draw.backgroundColor(PINK)
-    draw.text("Hello, Valiant!")
-
-    events.EventSystem.getInstance().emit "draw"
+    vstdlib_ui_beginDrawing()
+    -- vstdlib_ui_drawBackgroundColor(PINK)
+    -- vstdlib_ui_drawText("Hello, Valiant!", 16, 24, 32, SKYBLUE)
+    -- events.EventSystem.getInstance().emit "draw"
+    vstdlib_ui_endDrawing()
 end
 
 ---Returns `true` if the window is open; `false` otherwise.
@@ -63,4 +59,8 @@ end
 
 local singleton = Window.create()
 
-return singleton
+function Window.getInstance()
+    return singleton
+end
+
+return Window

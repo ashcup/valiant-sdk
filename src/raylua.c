@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include "raybonus.h"
 #include "raylib.h"
 #include "raylua.h"
 
@@ -82,26 +83,23 @@ int LuaRunString(LuaState* L, const char* sourceCode)
 
 int LuaRequire(LuaState* L, const char* modulePath)
 {
-    int errorCode = LUA_OK;
-
+    // If a module does not exist at `modulePath`:
 	if (!FileExists(modulePath))
 	{
+        // Write to the trace log.
 		TraceLog(LOG_ERROR, "`init.lua` not found.");
 
+        // Return an error code.
         return LUA_ERRFILE;
 	}
 
-	const char* sourceCodeBody = LoadFileText(modulePath);
+	// const char* sourceCodeBody = LoadFileText(modulePath);
+	const char* sourceCode = LoadFileText(modulePath);
 
-	const char* sourceCodeParts[3] = {
-		"(function ()",
-		sourceCodeBody,
-		"end)()"
-	};
+    // UnloadFileText(sourceCodeBody);
+	int errorCode = LuaRunString(L, sourceCode);
 
-	const char* sourceCode = TextJoin(sourceCodeParts, 3, "\n");
+    UnloadFileText(sourceCode);
 
-	UnloadFileText(sourceCodeBody);
-
-	return LuaRunString(L, sourceCode);
+    return errorCode;
 }

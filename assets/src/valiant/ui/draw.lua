@@ -6,7 +6,7 @@ local tableutils = require "valiant.core.tableutils"
 local common = require "valiant.ui.common"
 local d2d = require "valiant.ui.d2d"
 local d3d = require "valiant.ui.d3d"
-local window = require "valiant.ui.window"
+local window = require "valiant.ui.Window"
 
 local draw = {
     common = common,

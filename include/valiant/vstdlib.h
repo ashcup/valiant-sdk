@@ -123,6 +123,20 @@ int vstdlib_console_traceLog(LuaState* L);
 int vstdlib_ui_beginDrawing(LuaState* L);
 
 /// <summary>
+/// Draw a solid background color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_ui_drawBackgroundColor(LuaState* L);
+
+/// <summary>
+/// Draw text.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_ui_drawText(LuaState* L);
+
+/// <summary>
 /// End drawing.
 /// </summary>
 /// <param name="L">The Lua state.</param>
