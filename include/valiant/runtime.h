@@ -11,6 +11,12 @@
 /// Initialize a new Valiant state.
 /// </summary>
 /// <returns>A new Valiant state.</returns>
-LuaState* Valiant_Init(void);
+LuaState* valiant_Init(void);
+
+/// <summary>
+/// Stop the Valiant runtime, forcing all open states to close.
+/// </summary>
+/// <returns>A new Valiant state.</returns>
+void valiant_Close(LuaState* L);
 
 #endif // VALIANT__RUNTIME_H

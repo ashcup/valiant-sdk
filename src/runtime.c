@@ -10,21 +10,32 @@
 #include "valiant/runtime.h"
 #include "valiant/vstdlib.h"
 
-LuaState* Valiant_Init(void)
+LuaState* valiant_Init(void)
 {
-	if (!Valiant_isInitialized)
+	if (!valiant_isInitialized)
 	{
-		Valiant_LoadStatic();
+		valiant_LoadStatic();
 	}
 
 	LuaState* L = LuaInit();
 
 	LuaOpenLibs(L);
 
-	Valiant_InitStandardLibrary(L);
+	valiant_InitStandardLibrary(L);
 
 	LuaRequire(L, "assets/src/valiant.lua");
 	LuaRequire(L, "assets/src/init.lua");
 
+	valiant_instanceCount++;
+
 	return L;
+}
+
+void valiant_Close(LuaState* L)
+{
+	// Subtract 1 from the instance count and check if any remain:
+	if (valiant_instanceCount-- < 1)
+	{
+		valiant_UnloadStatic();
+	}
 }

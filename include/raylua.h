@@ -5,6 +5,7 @@
 #if !defined(RAYLUA_H)
 #define RAYLUA_H
 
+#include <math.h>
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -34,6 +35,7 @@ static const char* DIRECTORY_DELIMITER =
 #define LuaCheckStack(L, n)                     lua_checkstack(L, n)
 #define LuaCheckInteger(L, n)                   (int)luaL_checkinteger(L, n)
 #define LuaCheckNumber(L, n)                    (double)luaL_checknumber(L, n)
+#define LuaCheckNumberAsInteger(L, n)           (int)round(LuaCheckNumber(L, n))
 #define LuaCheckString(L, n)                    luaL_checkstring(L, n)
 #define LuaToUserdata(L, n)                     lua_touserdata(L, n)
 #define LuaClose(L)                             lua_close(L)

@@ -2,8 +2,11 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
--- local raylib = require "raylib"
+local raylib = require "raylib"
 -- local events = require "valiant.core.events"
+
+local COLOR_BACKGROUND = Color.PINK
+local COLOR_PRIMARY = Color.SKYBLUE
 
 local Window = class {
     width = 640,
@@ -25,7 +28,7 @@ end
 ---Draw the application.
 function Window:draw()
     vstdlib_ui_beginDrawing()
-    -- vstdlib_ui_drawBackgroundColor(PINK)
+    vstdlib_ui_drawBackgroundColor(COLOR_BACKGROUND:toRaylib())
     -- vstdlib_ui_drawText("Hello, Valiant!", 16, 24, 32, SKYBLUE)
     -- events.EventSystem.getInstance().emit "draw"
     vstdlib_ui_endDrawing()

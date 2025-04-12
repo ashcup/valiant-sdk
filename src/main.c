@@ -11,10 +11,7 @@
 
 int main()
 {
-	LuaState* L = Valiant_Init();
-
-	// // Tell the window to use vsync and work on high DPI displays
-	// SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+	LuaState* L = valiant_Init();
 
 	// // Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	// SearchAndSetResourceDir("assets");
@@ -43,7 +40,7 @@ int main()
 	// 	EndDrawing();
 	// }
 
-	LuaClose(L);
+	valiant_Close(L);
 
 	// // cleanup
 	// // unload our texture so it can be cleaned up

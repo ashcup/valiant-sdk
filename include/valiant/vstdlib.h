@@ -8,29 +8,34 @@
 #include "raylib.h"
 #include "raylua.h"
 
-bool Valiant_isInitialized;
+#if !defined(COLOR_DEFAULT)
+#define COLOR_DEFAULT CLITERAL(Color){ 0, 0, 0, 255 }
+#endif
+
+int valiant_instanceCount;
+bool valiant_isInitialized;
 
 /// <summary>
 /// Get the Valiant icon as an image.
 /// </summary>
 /// <returns>The Valiant icon as an image.</returns>
-Image Valiant_GetIconImage(void);
+Image valiant_GetIconImage(void);
 
 /// <summary>
 /// Initialize a new Lua state with Valiant's pre-defined global variables (for use with `LuaInit()`).
 /// </summary>
 /// <param name="L">The Lua state.</param>
-void Valiant_InitStandardLibrary(LuaState* L);
+void valiant_InitStandardLibrary(LuaState* L);
 
 /// <summary>
 /// Load all static assets.
 /// </summary>
-void Valiant_LoadStatic(void);
+void valiant_LoadStatic(void);
 
 /// <summary>
 /// Unload all static assets.
 /// </summary>
-void Valiant_UnloadStatic(void);
+void valiant_UnloadStatic(void);
 
 /// <summary>
 /// Abort the application with an error code.
@@ -114,6 +119,41 @@ int vstdlib_console_log(LuaState* L);
 /// <param name="L">The Lua state.</param>
 /// <returns>The return count.</returns>
 int vstdlib_console_traceLog(LuaState* L);
+
+/// <summary>
+/// Create a new raylib color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_raylib_Color_create(LuaState* L);
+
+/// <summary>
+/// Get or set the red value of a raylib color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_raylib_Color_r(LuaState* L);
+
+/// <summary>
+/// Get or set the green value of a raylib color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_raylib_Color_g(LuaState* L);
+
+/// <summary>
+/// Get or set the blue value of a raylib color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_raylib_Color_b(LuaState* L);
+
+/// <summary>
+/// Get or set the alpha value of a raylib color.
+/// </summary>
+/// <param name="L">The Lua state.</param>
+/// <returns>The return count.</returns>
+int vstdlib_raylib_Color_a(LuaState* L);
 
 /// <summary>
 /// Begin drawing.

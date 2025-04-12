@@ -34,6 +34,7 @@ function setuimode(name)
         _G.Window = nil
         _G.window = nil
     elseif name == "window" then
+        _G.Color = require "valiant.ui.Color"
         _G.Window = require "valiant.ui.Window"
         _G.window = Window.getInstance()
         _G.window:open()

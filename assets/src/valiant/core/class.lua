@@ -9,6 +9,7 @@ local tableutils = require "valiant.core.tableutils"
 ---@return table instance The new class.
 local function class(fields)
     if type(fields) ~= "table" then fields = {} end
+    fields = tableutils.copy(fields)
     if type(fields.__extends) ~= "table" then fields.__extends = {} end
     local extends = fields.__extends
     fields.__extends = nil
@@ -23,7 +24,7 @@ local function class(fields)
     ---Create a new instance of this class.
     ---@return table instance An instance of this class.
     function NewClass.create(...) -- TODO: @valiant-lang/feature `...` -> `args...`
-        local instance = fields
+        local instance = tableutils.copy(fields)
         setmetatable(instance, NewClass)
         instance:__init(...) -- TODO: @valiant-lang/feature `unpack(arg)` -> `...args`
         return instance

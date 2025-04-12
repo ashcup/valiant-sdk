@@ -10,5 +10,6 @@ return {
     LOG_FATAL = 6,
     LOG_TRACE = 1,
     LOG_WARNING = 4,
+    Color = require "raylib.Color",
     window = require "raylib.window"
 }

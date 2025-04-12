@@ -4,7 +4,7 @@
 
 #include "valiant/string.h"
 
-char* Valiant_String_Concat(const char *s1, const char *s2)
+char* valiant_String_Concat(const char *s1, const char *s2)
 {
     // Add 1 to size to account for for the null-terminator character (`\0`).
     char *result = malloc(strlen(s1) + strlen(s2) + 1);
@@ -25,7 +25,7 @@ char* Valiant_String_Concat(const char *s1, const char *s2)
     return result;
 }
 
-Valiant_SplitString* Valiant_String_Split(const char* input, const char* delimiter)
+valiant_SplitString* valiant_String_Split(const char* input, const char* delimiter)
 {
     // If the input is `NULL`, return `NULL`.
     if (!input) return NULL;
@@ -73,7 +73,7 @@ Valiant_SplitString* Valiant_String_Split(const char* input, const char* delimit
     free(buffer);
 
     // Create the split string instance.
-    Valiant_SplitString* splitString = malloc(sizeof(Valiant_SplitString));
+    valiant_SplitString* splitString = malloc(sizeof(valiant_SplitString));
 
     // Set the split string's fields.
     splitString->count = i;
@@ -83,7 +83,7 @@ Valiant_SplitString* Valiant_String_Split(const char* input, const char* delimit
     return splitString;
 }
 
-void Valiant_String_Split_Unload(Valiant_SplitString* splitString)
+void valiant_String_Split_Unload(valiant_SplitString* splitString)
 {
     int count = splitString->count;
     char** items = splitString->items;

@@ -19,11 +19,12 @@ static void _InitFunctions(LuaState* L);
 static void _UpdateConstants(LuaState* L);
 static void _UpdateConstants_Cwd(LuaState* L);
 
-static Image Valiant_iconImage;
+static Image valiant_iconImage;
 
-bool Valiant_isInitialized = false;
+int valiant_instanceCount = 0;
+bool valiant_isInitialized = false;
 
-void Valiant_InitStandardLibrary(LuaState* L)
+void valiant_InitStandardLibrary(LuaState* L)
 {
 	_InitConstants(L);
 	_InitFunctions(L);
@@ -104,6 +105,11 @@ static void _InitFunctions(LuaState* L)
 	LuaSetGlobalCFunction(L, "vstdlib_window_tick", vstdlib_window_tick);
 	LuaSetGlobalCFunction(L, "vstdlib_console_log", vstdlib_console_log);
 	LuaSetGlobalCFunction(L, "vstdlib_console_traceLog", vstdlib_console_traceLog);
+	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_create", vstdlib_raylib_Color_create);
+	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_r", vstdlib_raylib_Color_r);
+	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_g", vstdlib_raylib_Color_g);
+	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_b", vstdlib_raylib_Color_b);
+	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_a", vstdlib_raylib_Color_a);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_beginDrawing", vstdlib_ui_beginDrawing);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_drawBackgroundColor", vstdlib_ui_drawBackgroundColor);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_drawText", vstdlib_ui_drawText);
@@ -138,7 +144,7 @@ int vstdlib_application_abort(LuaState* L)
 	}
 	else if (LuaIsNumber(L, codeLoc))
 	{
-		code = (int)round(LuaCheckNumber(L, codeLoc));
+		code = LuaCheckNumberAsInteger(L, codeLoc);
 	}
 
 	valiant_abortWithCode(message, code);
@@ -168,7 +174,7 @@ int vstdlib_application_exit(LuaState* L)
 	}
 	else if (LuaIsNumber(L, codeLoc))
 	{
-		code = (int)round(LuaCheckNumber(L, codeLoc));
+		code = LuaCheckNumberAsInteger(L, codeLoc);
 	}
 
 	exit(code);
@@ -248,12 +254,180 @@ int vstdlib_console_traceLog(LuaState* L)
 	}
 	else if (LuaIsNumber(L, logLevelLoc))
 	{
-		logLevel = (int)round(LuaCheckNumber(L, logLevelLoc));
+		logLevel = LuaCheckNumberAsInteger(L, logLevelLoc);
 	}
 
 	TraceLog(logLevel, message);
 
 	return 0;
+}
+
+int vstdlib_raylib_Color_create(LuaState* L)
+{
+	int rLoc = 1;
+	int gLoc = 2;
+	int bLoc = 3;
+	int aLoc = 4;
+
+	Color color = COLOR_DEFAULT;
+
+	if (LuaIsInteger(L, rLoc))
+	{
+		color.r = LuaCheckInteger(L, rLoc);
+	}
+
+	if (LuaIsInteger(L, gLoc))
+	{
+		color.g = LuaCheckInteger(L, gLoc);
+	}
+
+	if (LuaIsInteger(L, bLoc))
+	{
+		color.b = LuaCheckInteger(L, bLoc);
+	}
+
+	if (LuaIsInteger(L, aLoc))
+	{
+		color.a = LuaCheckInteger(L, aLoc);
+	}
+
+	Color* userdata = lua_newuserdata(L, sizeof(Color));
+
+	*userdata = color;
+
+	return 1;
+}
+
+int vstdlib_raylib_Color_r(LuaState* L)
+{
+	int colorLoc = 1;
+	int valueLoc = 2;
+
+	Color color = COLOR_DEFAULT;
+	unsigned char value = 0x00;
+
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	if (LuaIsInteger(L, valueLoc))
+	{
+		value = LuaCheckInteger(L, valueLoc);
+	}
+	else if (LuaIsNumber(L, valueLoc))
+	{
+		value = LuaCheckNumberAsInteger(L, valueLoc);
+	}
+	else
+	{
+		value = color.r;
+	}
+
+	LuaPushInteger(L, value);
+
+	return 1;
+}
+
+int vstdlib_raylib_Color_g(LuaState* L)
+{
+	int colorLoc = 1;
+	int valueLoc = 2;
+
+	Color color = COLOR_DEFAULT;
+	unsigned char value = 0x00;
+
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	if (LuaIsInteger(L, valueLoc))
+	{
+		value = LuaCheckInteger(L, valueLoc);
+	}
+	else if (LuaIsNumber(L, valueLoc))
+	{
+		value = LuaCheckNumberAsInteger(L, valueLoc);
+	}
+	else
+	{
+		value = color.g;
+	}
+
+	LuaPushInteger(L, value);
+
+	return 1;
+}
+
+int vstdlib_raylib_Color_b(LuaState* L)
+{
+	int colorLoc = 1;
+	int valueLoc = 2;
+
+	Color color = COLOR_DEFAULT;
+	unsigned char value = 0x00;
+
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	if (LuaIsInteger(L, valueLoc))
+	{
+		value = LuaCheckInteger(L, valueLoc);
+	}
+	else if (LuaIsNumber(L, valueLoc))
+	{
+		value = LuaCheckNumberAsInteger(L, valueLoc);
+	}
+	else
+	{
+		value = color.b;
+	}
+
+	LuaPushInteger(L, value);
+
+	return 1;
+}
+
+int vstdlib_raylib_Color_a(LuaState* L)
+{
+	int colorLoc = 1;
+	int valueLoc = 2;
+
+	Color color = COLOR_DEFAULT;
+	unsigned char value = 0x00;
+
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	if (LuaIsInteger(L, valueLoc))
+	{
+		value = LuaCheckInteger(L, valueLoc);
+	}
+	else if (LuaIsNumber(L, valueLoc))
+	{
+		value = LuaCheckNumberAsInteger(L, valueLoc);
+	}
+	else
+	{
+		value = color.a;
+	}
+
+	LuaPushInteger(L, value);
+
+	return 1;
 }
 
 int vstdlib_ui_beginDrawing(LuaState* L)
@@ -266,9 +440,16 @@ int vstdlib_ui_beginDrawing(LuaState* L)
 int vstdlib_ui_drawBackgroundColor(LuaState* L)
 {
 	int colorLoc = 1;
-	Color* color = LuaToUserdata(L, colorLoc);
+	Color color = PINK;
 
-	ClearBackground(*color);
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	ClearBackground(color);
 
 	return 0;
 }
@@ -320,7 +501,7 @@ int vstdlib_window_open(LuaState* L)
 
 	InitWindow(640, 480, "Valiant");
 
-	SetWindowIcon(Valiant_GetIconImage());
+	SetWindowIcon(valiant_GetIconImage());
 
 	return 0;
 }
@@ -337,7 +518,7 @@ int vstdlib_window_setTargetFPS(LuaState* L)
 	}
 	else if (LuaIsNumber(L, targetFPSLoc))
 	{
-		targetFPS = (int)round(LuaCheckNumber(L, targetFPSLoc));
+		targetFPS = LuaCheckNumberAsInteger(L, targetFPSLoc);
 	}
 
 	SetTargetFPS(targetFPS);
@@ -350,19 +531,21 @@ int vstdlib_window_shouldClose(LuaState* L)
 	return 1;
 }
 
-void Valiant_LoadStatic(void)
+void valiant_LoadStatic(void)
 {
 	// Load the Valiant icon as an image.
-	Valiant_iconImage = LoadImage("assets/img/valiant.png");
+	valiant_iconImage = LoadImage("assets/img/valiant.png");
 }
 
-void Valiant_UnloadStatic(void)
+void valiant_UnloadStatic(void)
 {
 	// Unload the Valiant icon as an image.
-	UnloadImage(Valiant_iconImage);
+	UnloadImage(valiant_iconImage);
+
+	valiant_isInitialized = false;
 }
 
-Image Valiant_GetIconImage(void)
+Image valiant_GetIconImage(void)
 {
-	return Valiant_iconImage;
+	return valiant_iconImage;
 }
