@@ -6,7 +6,7 @@ local tableutils = require "valiant.core.tableutils"
 local common = require "valiant.ui.common"
 local d2d = require "valiant.ui.d2d"
 local d3d = require "valiant.ui.d3d"
-local window = require "valiant.ui.Window"
+local Window = require "valiant.ui.Window"
 
 local draw = {
     common = common,
@@ -17,6 +17,6 @@ local draw = {
 tableutils.merge(draw, common)
 tableutils.merge(draw, d2d)
 tableutils.merge(draw, d3d)
-tableutils.merge(draw, window)
+tableutils.merge(draw, Window)
 
 return draw

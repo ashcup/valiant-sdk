@@ -2,19 +2,23 @@
 -- License, v. 2.0. If a copy of the MPL was not distributed with this
 -- file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-function LuaAppendPath(pathBase)
+local function valiant__LuaAppendPath(pathBase)
     package.path = pathBase .. "?.lua" .. ";" .. package.path
     package.path = pathBase .. "?" .. DIRECTORY_DELIMITER .. "init.lua" .. ";" .. package.path
 end
 
-local pathBase = CWD .. DIRECTORY_DELIMITER .. "assets" .. DIRECTORY_DELIMITER .. "src" .. DIRECTORY_DELIMITER;
+local valiant__pathBase = CWD .. DIRECTORY_DELIMITER .. "assets" .. DIRECTORY_DELIMITER .. "src" .. DIRECTORY_DELIMITER;
 
-LuaAppendPath(pathBase)
+valiant__LuaAppendPath(valiant__pathBase)
+
+local valiant__oop = require "valiant.core.oop"
 
 ---@diagnostic disable-next-line: lowercase-global
-class = require "valiant.core.class"
+class = valiant__oop.class
 
 ---@diagnostic disable-next-line: lowercase-global
+instanceof = valiant__oop.instanceof
+
 require "valiant.core.mode"
 
 -- Enable simple mode.

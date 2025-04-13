@@ -112,7 +112,7 @@ static void _InitFunctions(LuaState* L)
 	LuaSetGlobalCFunction(L, "vstdlib_raylib_Color_a", vstdlib_raylib_Color_a);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_beginDrawing", vstdlib_ui_beginDrawing);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_drawBackgroundColor", vstdlib_ui_drawBackgroundColor);
-	LuaSetGlobalCFunction(L, "vstdlib_ui_drawText", vstdlib_ui_drawText);
+	LuaSetGlobalCFunction(L, "vstdlib_ui_drawPixel", vstdlib_ui_drawPixel);
 	LuaSetGlobalCFunction(L, "vstdlib_ui_endDrawing", vstdlib_ui_endDrawing);
 	LuaSetGlobalCFunction(L, "vstdlib_window_close", vstdlib_window_close);
 	LuaSetGlobalCFunction(L, "vstdlib_window_open", vstdlib_window_open);
@@ -454,21 +454,42 @@ int vstdlib_ui_drawBackgroundColor(LuaState* L)
 	return 0;
 }
 
-int vstdlib_ui_drawText(LuaState* L)
+int vstdlib_ui_drawPixel(LuaState* L)
 {
-	int textLoc = 1;
-	int xLoc = 2;
-	int yLoc = 3;
-	int fontSizeLoc = 4;
-	int colorLoc = 5;
+	int x = 64;
+	int y = 64;
+	Color color = COLOR_DEFAULT;
 
-	const char* text = LuaCheckString(L, textLoc);
-	int x = LuaCheckInteger(L, textLoc);
-	int y = LuaCheckInteger(L, textLoc);
-	int fontSize = LuaCheckInteger(L, textLoc);
-	Color* color = LuaToUserdata(L, colorLoc);
+	int xLoc = 1;
+	int yLoc = 2;
+	int colorLoc = 3;
 
-	DrawText(text, x, y, fontSize, *color);
+	if (LuaIsInteger(L, xLoc))
+	{
+		x = LuaCheckInteger(L, xLoc);
+	}
+	else if (LuaIsNumber(L, xLoc))
+	{
+		x = LuaCheckNumberAsInteger(L, xLoc);
+	}
+
+	if (LuaIsInteger(L, yLoc))
+	{
+		y = LuaCheckInteger(L, yLoc);
+	}
+	else if (LuaIsNumber(L, yLoc))
+	{
+		y = LuaCheckNumberAsInteger(L, yLoc);
+	}
+
+	if (lua_isuserdata(L, colorLoc))
+	{
+		Color* userdata = LuaToUserdata(L, colorLoc);
+
+		color = *userdata;
+	}
+
+	DrawPixel(x, y, color);
 
 	return 0;
 }

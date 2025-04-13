@@ -20,6 +20,18 @@ function Window:__gc()
     self:close()
 end
 
+function Window:clear(background)
+    -- If the background is a color, build it.
+    if instanceof(background, Color) then
+        background = background:build()
+    end
+
+    -- If the background is a built color, fill the window with it.
+    if instanceof(background, "userdata") then
+        vstdlib_ui_drawBackgroundColor(background)
+    end
+end
+
 ---Stop the window.
 function Window:close()
     vstdlib_window_close()
@@ -28,10 +40,19 @@ end
 ---Draw the application.
 function Window:draw()
     vstdlib_ui_beginDrawing()
-    vstdlib_ui_drawBackgroundColor(COLOR_BACKGROUND:toRaylib())
-    -- vstdlib_ui_drawText("Hello, Valiant!", 16, 24, 32, SKYBLUE)
+    self:clear(COLOR_BACKGROUND)
+    self:setPixel(64, 64, COLOR_PRIMARY)
+    -- vstdlib_ui_drawText("Hello, Valiant!", 16, 24, 32, COLOR_PRIMARY:build())
     -- events.EventSystem.getInstance().emit "draw"
     vstdlib_ui_endDrawing()
+end
+
+function Window:setPixel(x, y, color)
+    vstdlib_ui_drawPixel(x, y, color:build())
+end
+
+function Window:getPixel(x, y)
+    return vstdlib_ui_getPixel(x, y)
 end
 
 ---Returns `true` if the window is open; `false` otherwise.

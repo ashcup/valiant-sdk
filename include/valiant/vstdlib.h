@@ -170,11 +170,11 @@ int vstdlib_ui_beginDrawing(LuaState* L);
 int vstdlib_ui_drawBackgroundColor(LuaState* L);
 
 /// <summary>
-/// Draw text.
+/// Draw a single pixel.
 /// </summary>
 /// <param name="L">The Lua state.</param>
 /// <returns>The return count.</returns>
-int vstdlib_ui_drawText(LuaState* L);
+int vstdlib_ui_drawPixel(LuaState* L);
 
 /// <summary>
 /// End drawing.

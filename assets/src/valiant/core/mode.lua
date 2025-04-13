@@ -5,9 +5,8 @@ local stringutils = require "valiant.core.stringutils"
 function resetglobals()
     _G.Application = require "valiant.core.Application"
     _G.Console = require "valiant.core.Console"
-    ---@diagnostic disable-next-line: lowercase-global
+    _G.oop = require "valiant.core.oop"
     _G.application = Application.create()
-    ---@diagnostic disable-next-line: lowercase-global
     _G.console = application.console
 end
 

@@ -56,7 +56,7 @@ end
 
 ---Convert this `valiant.ui.Color` into a `raylib.Color`.
 ---@return unknown
-function Color:toRaylib()
+function Color:build()
     -- print "Color {"
     -- for k, v in pairs(self) do
     --     print("    " .. k .. " = " .. v)

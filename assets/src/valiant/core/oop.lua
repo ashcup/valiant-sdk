@@ -4,6 +4,16 @@
 
 local tableutils = require "valiant.core.tableutils"
 
+local function instanceof(instance, class)
+    local classType = type(class)
+    if classType == "string" then
+        return type(instance) == class
+    elseif classType == "table" then
+        return getmetatable(instance) == class
+    end
+    return instance == class
+end
+
 ---comment
 ---@param fields table A table of fields to initialize the instance.
 ---@return table instance The new class.
@@ -32,4 +42,7 @@ local function class(fields)
     return NewClass
 end
 
-return class
+return {
+    class = class,
+    instanceof = instanceof
+}
